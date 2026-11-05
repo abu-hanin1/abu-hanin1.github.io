@@ -9,8 +9,4 @@ window.SITE_CONFIG = {
   supabaseUrl: 'https://jyrcywuxqfandzerlrga.supabase.co',
   supabaseAnonKey: 'sb_publishable_4tt3LWss6QhyskTBnM7aCA_Aq4kw1c8',
   googleClientId: '',
-
-  // Seconds after pressing a step's button before it counts. A visitor who returns
-  // sooner just waits out the rest; they never have to press the button again.
-  minAwaySeconds: 3,
 };

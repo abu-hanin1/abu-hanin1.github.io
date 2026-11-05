@@ -9,11 +9,6 @@
 
   let post = null;
   const state = { done: new Set(), clicked: new Set(), msg: {}, busy: null, items: null, unlocking: false };
-  const pendingKey = `miftah_pending_${slug}`;
-  // stepId -> time its button was pressed. Saved because phones often reload
-  // this tab while the visitor is away in the YouTube app.
-  const away = {};
-  const timers = {};
 
   const render = () => {
     root.innerHTML = window.renderLinkCard(post, state);
@@ -93,41 +88,15 @@
     if (!url) return;
     window.open(url, '_blank', 'noopener');
     state.clicked.add(id);
+    // Counted and saved the moment the button is pressed, so the lock is already open
+    // when the visitor returns. Phones don't reliably report that return, and may reload the tab.
     if (!step.verify && !state.done.has(id)) {
-      away[id] = Date.now();
-      clearTimeout(timers[id]);
-      delete timers[id];
-      window.store.set(pendingKey, away);
+      state.done.add(id);
+      saveDone();
+      if (post.steps.every(s => state.done.has(s.id))) celebrate();
     }
     delete state.msg[id];
     render();
-  }
-
-  function finishStep(id) {
-    delete away[id];
-    delete timers[id];
-    delete state.msg[id];
-    window.store.set(pendingKey, away);
-    state.done.add(id);
-    saveDone();
-    if (post.steps.every(s => state.done.has(s.id))) celebrate();
-    render();
-  }
-
-  // Runs when the visitor comes back to this tab.
-  function onReturn() {
-    if (document.hidden) return;
-    const wait = (C.minAwaySeconds || 3) * 1000;
-    let changed = false;
-    Object.keys(away).forEach(id => {
-      if (timers[id]) return;
-      const left = wait - (Date.now() - away[id]);
-      if (left <= 0) { finishStep(id); return; }
-      state.msg[id] = { kind: 'info', text: 'جاري تأكيد الخطوة...' };
-      timers[id] = setTimeout(() => finishStep(id), left);
-      changed = true;
-    });
-    if (changed) render();
   }
 
   function celebrate() {
@@ -245,9 +214,6 @@
     }
   });
 
-  document.addEventListener('visibilitychange', onReturn);
-  window.addEventListener('focus', onReturn);
-
   async function countView() {
     const key = `miftah_view_${slug}`;
     const last = window.store.get(key, 0);
@@ -270,11 +236,6 @@
       if (post.steps.some(s => s.id === id && !s.verify)) state.done.add(id);
     });
 
-    const pending = window.store.get(pendingKey, {});
-    Object.keys(pending).forEach(id => {
-      if (post.steps.some(s => s.id === id && !s.verify) && !state.done.has(id)) away[id] = pending[id];
-    });
-
     await countView();
 
     // Someone already verified before: the lock opens with no extra steps.
@@ -283,6 +244,5 @@
       try { applyVerified(await window.DB.unlock(slug, { pass })); } catch {}
     }
     render();
-    onReturn();
   })();
 })();
