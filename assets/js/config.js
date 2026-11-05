@@ -10,6 +10,7 @@ window.SITE_CONFIG = {
   supabaseAnonKey: 'sb_publishable_4tt3LWss6QhyskTBnM7aCA_Aq4kw1c8',
   googleClientId: '',
 
-  // A click-based step counts only if the visitor stayed away at least this long.
-  minAwaySeconds: 8,
+  // Seconds after pressing a step's button before it counts. A visitor who returns
+  // sooner just waits out the rest; they never have to press the button again.
+  minAwaySeconds: 3,
 };
