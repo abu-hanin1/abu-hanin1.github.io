@@ -245,11 +245,23 @@
 
   async function countView() {
     const key = `miftah_view_${slug}`;
+    const params = new URLSearchParams(location.search);
+    if (params.has('counted')) {
+      // Arrived from Messenger, where this visit was already counted.
+      window.store.set(key, Date.now());
+      params.delete('counted');
+      const qs = params.toString();
+      history.replaceState(null, '', location.pathname + (qs ? `?${qs}` : ''));
+      return;
+    }
+    // One visit per device every 6 hours, so refreshing the page doesn't inflate the number.
     const last = window.store.get(key, 0);
     if (Date.now() - last < 6 * 3600 * 1000) return;
-    window.store.set(key, Date.now());
-    post.views = (post.views || 0) + 1;
-    try { await window.DB.registerView(slug); } catch {}
+    try {
+      await window.DB.registerView(slug);
+      window.store.set(key, Date.now());
+      post.views = (post.views || 0) + 1;
+    } catch {}
   }
 
   async function init() {
@@ -276,8 +288,7 @@
     window.addEventListener('focus', scheduleChecks);
     window.addEventListener('pageshow', scheduleChecks);
 
-    // On Android the visit continues in Chrome, which counts it, so it isn't counted twice.
-    if (inApp !== 'android') await countView();
+    await countView();
 
     // Someone already verified before: the lock opens with no extra steps.
     const pass = window.store.get(PASS_KEY, null);

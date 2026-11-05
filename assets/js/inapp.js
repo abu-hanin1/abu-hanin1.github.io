@@ -14,6 +14,8 @@
 
     chromeUrl(href, platform) {
       const u = new URL(href);
+      // The visit was already counted in the app, so Chrome must not count it again.
+      u.searchParams.set('counted', '1');
       const rest = u.host + u.pathname + u.search;
       if (platform === 'ios') return `googlechromes://${rest}`;
       // Without Chrome installed, Android comes back here marked so the page carries on normally.
