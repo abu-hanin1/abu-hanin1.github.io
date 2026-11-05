@@ -173,17 +173,16 @@
     const total = steps.length;
     const doneCount = steps.filter(x => s.done.has(x.id)).length;
     const ready = doneCount === total;
-    // Steps verified through Google are enforced by the server, so they can't be skipped.
-    const canSkip = !ready && !steps.some(x => x.verify);
     const cover = safeImg(post.cover_url);
     const chips = [
       theme.hideUnlocks ? '' : `<span class="chip">${ic('unlock', 15)}<b>${window.fmtNum(post.unlocks)}</b> فتحوا الرابط</span>`,
       theme.hideViews ? '' : `<span class="chip">${ic('eye', 15)}<b>${window.fmtNum(post.views)}</b> مشاهدة</span>`,
     ].join('');
     const opened = !!s.items;
-    return `<article class="lk-card" style="--accent:${esc(theme.accent || '#10e08a')}">
+    const cardClass = ['lk-card', cover ? '' : 'no-cover', opened && s.items.some(i => i.type === 'text') ? 'has-text' : ''].join(' ').trim();
+    return `<article class="${cardClass}" style="--accent:${esc(theme.accent || '#10e08a')}">
       <div class="lk-info">
-        ${cover ? `<img class="lk-cover" src="${esc(cover)}" alt="">` : `<div class="lk-cover ph">${ic('image', 40)}</div>`}
+        ${cover ? `<img class="lk-cover" src="${esc(cover)}" alt="">` : ''}
         <div class="lk-head">
           <h1 dir="auto">${esc(post.title) || 'عنوان البوست'}</h1>
           <button class="round" data-act="share" aria-label="مشاركة الرابط">${ic('share', 20)}</button>
@@ -195,7 +194,7 @@
       <div class="lk-side">
         ${opened ? `<div class="got-title">${ic('unlock', 22)} اتفتح! دي حاجتك</div>
           <div class="got-list">${s.items.map(itemHtml).join('') || '<p class="muted">لا يوجد محتوى بعد.</p>'}</div>`
-        : `${total ? `<div class="prog"><span>${steps.some(x => x.verify) ? 'الخطوات المطلوبة' : 'ادعمنا بخطوة بسيطة'}</span><b>${doneCount}/${total}</b>
+        : `${total ? `<div class="prog"><span>الخطوات المطلوبة</span><b>${doneCount}/${total}</b>
             <i style="--p:${total ? (doneCount / total) * 100 : 0}%"></i></div>` : ''}
           <div class="steps">${steps.map(x => stepHtml(x, s)).join('')}</div>
           ${total && ready ? `<div class="all-done">${ic('check', 18)} كل الخطوات اكتملت</div>` : ''}
@@ -203,8 +202,7 @@
             ${ic(ready ? 'unlock' : 'lock', 24)}
             <span>${s.unlocking ? 'جاري الفتح...' : esc(theme.unlockLabel || 'افتح المحتوى')}</span>
           </button>
-          <p class="unlock-hint">${ready ? 'القفل اتفتح! اضغط علشان تحصل على المحتوى' : canSkip ? 'فضلًا وليس أمرًا، دعمك بيساعدنا نكمل ونقدم لك محتوى مجاني.' : 'كمّل كل الخطوات اللي فوق الأول'}</p>
-          ${canSkip ? `<button class="skip-btn" data-act="skip" ${s.unlocking ? 'disabled' : ''}>${steps.some(x => /^yt_(subscribe|bell)$/.test(x.action)) ? 'أكمل بدون اشتراك' : 'أكمل بدون الخطوات'}</button>` : ''}
+          <p class="unlock-hint">${ready ? 'القفل اتفتح! اضغط علشان تحصل على المحتوى' : 'كمّل كل الخطوات اللي فوق الأول'}</p>
           <div class="how"><b>إزاي تفتح الرابط؟</b>
             <span>اضغط على الزر، نفّذ الخطوة، وارجع لنفس الصفحة هتلاقي القفل مفتوح. <strong>مجانًا</strong> وبدون أي تعقيد.</span></div>`}
       </div>
