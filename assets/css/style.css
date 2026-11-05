@@ -346,6 +346,7 @@ body.link-page { display: flex; align-items: flex-start; }
 .action-pick:hover { filter: brightness(1.15); }
 .action-pick span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .action-pick small { color: var(--muted); font-size: 12px; flex: none; }
+.step-note { font-size: 13px; }
 .verify-check { font-size: 14px; color: #5df0b3; }
 .verify-check.off { color: var(--muted); cursor: not-allowed; }
 .add-step { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 48px; margin-top: 10px; border: 1px dashed #4a525e; border-radius: 12px; color: #dfe4ea; font-weight: 800; }
