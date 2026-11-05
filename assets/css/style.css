@@ -219,7 +219,7 @@ body.link-page { display: flex; align-items: flex-start; }
 .g-mark { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: #fff; color: #1a73e8; font: 900 15px/1 Arial, sans-serif; }
 .step-msg { margin-top: 7px; padding: 8px 12px; border-radius: 10px; font-size: 14px; font-weight: 700; }
 .step-msg.err { background: rgba(255, 107, 107, .14); color: #ffb3b3; }
-.step-msg.warn { background: rgba(255, 197, 61, .13); color: #ffdc7d; }
+.step-msg.info { background: rgba(16, 224, 138, .12); color: #7ff5c4; }
 
 .unlock-btn {
   display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 58px; margin-top: 14px; padding: 10px 16px;
