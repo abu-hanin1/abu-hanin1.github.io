@@ -662,6 +662,55 @@
     document.getElementById('demoBar').hidden = !DB.isDemo;
   }
 
+  // -------------------------------------------------------- installable app
+  function setupInstall() {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('admin-sw.js', { scope: 'admin.html' }).catch(() => {});
+    }
+    const btn = document.getElementById('installBtn');
+    const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+    if (standalone || !btn) return; // an old cached admin.html has no button
+    btn.innerHTML = `${ic('download', 18)} تثبيت التطبيق`;
+
+    let promptEvent = null;
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault();
+      promptEvent = e;
+      btn.hidden = false;
+    });
+    window.addEventListener('appinstalled', () => {
+      btn.hidden = true;
+      toast('تم تثبيت التطبيق!', 'ok');
+    });
+
+    // iPhone and iPad have no install prompt: Safari's share menu is the only way.
+    const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    if (ios) btn.hidden = false;
+
+    btn.onclick = async () => {
+      if (promptEvent) {
+        promptEvent.prompt();
+        await promptEvent.userChoice;
+        promptEvent = null;
+        btn.hidden = true;
+      } else if (ios) {
+        const d = document.createElement('dialog');
+        d.className = 'modal small';
+        d.innerHTML = `<h2>تثبيت التطبيق على الآيفون</h2>
+          <ol class="install-steps">
+            <li>افتح الصفحة دي من متصفح <b>Safari</b>.</li>
+            <li>اضغط زر <b>المشاركة</b> ${ic('share', 18)} في شريط المتصفح.</li>
+            <li>اختار <b>Add to Home Screen</b> أو <b>إضافة إلى الشاشة الرئيسية</b>.</li>
+          </ol>
+          <div class="modal-acts"><button class="btn primary" data-close>تمام</button></div>`;
+        document.body.appendChild(d);
+        d.showModal();
+        d.addEventListener('close', () => d.remove());
+        d.querySelector('[data-close]').onclick = () => d.close();
+      }
+    };
+  }
+
   async function start() {
     let s = null;
     try { s = await DB.session(); }
@@ -674,5 +723,6 @@
     }
     route();
   }
+  setupInstall();
   start();
 })();
