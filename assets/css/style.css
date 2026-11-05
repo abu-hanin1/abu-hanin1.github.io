@@ -217,6 +217,10 @@ body.link-page { display: flex; align-items: flex-start; }
 .verify-btn:disabled { opacity: .7; animation: none; }
 @keyframes glow { 50% { box-shadow: 0 0 0 5px rgba(255, 255, 255, .17); } }
 .g-mark { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: #fff; color: #1a73e8; font: 900 15px/1 Arial, sans-serif; }
+.step-btn:disabled { cursor: default; transform: none; filter: none; }
+.step-btn.checking { background: var(--surface-3); color: #cdd3da; border-color: var(--line); }
+.spinner { width: 20px; height: 20px; flex: none; border-radius: 50%; border: 3px solid rgba(255, 255, 255, .25); border-top-color: var(--accent); animation: spin .8s linear infinite; }
+.all-done { display: flex; align-items: center; justify-content: center; gap: 7px; min-height: 42px; margin-top: 10px; border-radius: 11px; border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); font-weight: 800; font-size: 15px; }
 .step-msg { margin-top: 7px; padding: 8px 12px; border-radius: 10px; font-size: 14px; font-weight: 700; }
 .step-msg.err { background: rgba(255, 107, 107, .14); color: #ffb3b3; }
 .step-msg.info { background: rgba(16, 224, 138, .12); color: #7ff5c4; }
