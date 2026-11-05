@@ -173,6 +173,8 @@
     const total = steps.length;
     const doneCount = steps.filter(x => s.done.has(x.id)).length;
     const ready = doneCount === total;
+    // Steps verified through Google are enforced by the server, so they can't be skipped.
+    const canSkip = !ready && !steps.some(x => x.verify);
     const cover = safeImg(post.cover_url);
     const chips = [
       theme.hideUnlocks ? '' : `<span class="chip">${ic('unlock', 15)}<b>${window.fmtNum(post.unlocks)}</b> فتحوا الرابط</span>`,
@@ -193,7 +195,7 @@
       <div class="lk-side">
         ${opened ? `<div class="got-title">${ic('unlock', 22)} اتفتح! دي حاجتك</div>
           <div class="got-list">${s.items.map(itemHtml).join('') || '<p class="muted">لا يوجد محتوى بعد.</p>'}</div>`
-        : `${total ? `<div class="prog"><span>الخطوات المطلوبة</span><b>${doneCount}/${total}</b>
+        : `${total ? `<div class="prog"><span>${steps.some(x => x.verify) ? 'الخطوات المطلوبة' : 'ادعمنا بالخطوات دي'}</span><b>${doneCount}/${total}</b>
             <i style="--p:${total ? (doneCount / total) * 100 : 0}%"></i></div>` : ''}
           <div class="steps">${steps.map(x => stepHtml(x, s)).join('')}</div>
           ${total && ready ? `<div class="all-done">${ic('check', 18)} كل الخطوات اكتملت</div>` : ''}
@@ -201,7 +203,8 @@
             ${ic(ready ? 'unlock' : 'lock', 24)}
             <span>${s.unlocking ? 'جاري الفتح...' : esc(theme.unlockLabel || 'افتح المحتوى')}</span>
           </button>
-          <p class="unlock-hint">${ready ? 'القفل اتفتح! اضغط علشان تحصل على المحتوى' : 'كمّل كل الخطوات اللي فوق الأول'}</p>
+          <p class="unlock-hint">${ready ? 'القفل اتفتح! اضغط علشان تحصل على المحتوى' : canSkip ? 'الخطوات دي اختيارية. ادعمنا بيها، أو تخطاها وافتح المحتوى.' : 'كمّل كل الخطوات اللي فوق الأول'}</p>
+          ${canSkip ? `<button class="skip-btn" data-act="skip" ${s.unlocking ? 'disabled' : ''}>تخطي وافتح المحتوى</button>` : ''}
           <div class="how"><b>إزاي تفتح الرابط؟</b>
             <span>اضغط على الزر، نفّذ الخطوة، وارجع لنفس الصفحة هتلاقي القفل مفتوح. <strong>مجانًا</strong> وبدون أي تعقيد.</span></div>`}
       </div>

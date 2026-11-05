@@ -230,7 +230,7 @@
     }
     if (act === 'open') openStep(id);
     else if (act === 'verify') verify(id);
-    else if (act === 'unlock') unlock();
+    else if (act === 'unlock' || act === 'skip') unlock();
     else if (act === 'copy') {
       const it = state.items.find(x => x.id === id);
       const ok = await window.copyText(it ? it.value : '');
