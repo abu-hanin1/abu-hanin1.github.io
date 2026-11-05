@@ -378,6 +378,9 @@ body.link-page { display: flex; align-items: flex-start; }
 .modal-acts { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
 .saved-ic { display: grid; place-items: center; width: 68px; height: 68px; margin: 0 auto 10px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); }
 .saved-url { margin-top: 14px; text-align: left; }
+.install-steps { margin: 14px 0 0; padding-inline-start: 22px; text-align: start; }
+.install-steps li { margin-top: 8px; }
+.install-steps .ic { vertical-align: middle; color: var(--accent); }
 .search { display: flex; align-items: center; gap: 9px; margin-top: 14px; padding-inline: 14px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px; }
 .search:focus-within { border-color: var(--accent); }
 .search input { background: none !important; border: 0 !important; padding-inline: 0 !important; }
