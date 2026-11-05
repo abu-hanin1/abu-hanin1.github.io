@@ -235,8 +235,8 @@ body.link-page { display: flex; align-items: flex-start; }
 @keyframes ready { 50% { box-shadow: 0 0 0 7px color-mix(in srgb, var(--accent) 22%, transparent); } }
 @keyframes wiggle { 25% { transform: rotate(-13deg); } 75% { transform: rotate(13deg); } }
 .unlock-hint { margin-top: 8px; text-align: center; color: var(--muted); font-size: 14px; }
-.skip-btn { display: block; width: 100%; min-height: 46px; margin-top: 8px; padding: 8px 14px; border: 1px solid rgba(255, 255, 255, .22); border-radius: 12px; color: #dfe4ea; font-weight: 800; font-size: 15px; transition: background .15s; }
-.skip-btn:hover { background: rgba(255, 255, 255, .08); }
+.skip-btn { display: block; min-height: 40px; margin: 2px auto 0; padding: 6px 14px; color: var(--muted); font-weight: 700; font-size: 14px; text-decoration: underline; text-underline-offset: 3px; }
+.skip-btn:hover { color: var(--text); }
 .how { display: grid; gap: 3px; margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(255, 255, 255, .1); font-size: 15px; color: #cdd3da; }
 .how b { font-weight: 900; color: #fff; }
 .how strong { color: var(--accent); font-weight: 900; }
