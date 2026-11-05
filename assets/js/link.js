@@ -7,6 +7,8 @@
   const doneKey = `miftah_done_${slug}`;
   const openedKey = `miftah_opened_${slug}`;
   const checkingKey = `miftah_checking_${slug}`;
+  const inApp = window.InApp && !new URLSearchParams(location.search).has('nochrome')
+    ? window.InApp.detect(navigator.userAgent) : null;
 
   let post = null;
   const state = { done: new Set(), clicked: new Set(), checking: new Set(), msg: {}, busy: null, items: null, unlocking: false };
@@ -91,6 +93,8 @@
     const step = post.steps.find(s => s.id === id);
     const url = window.safeUrl(window.stepUrl(step));
     if (!url || state.checking.has(id) || (!step.verify && state.done.has(id))) return;
+    // Inside Messenger on Android, YouTube would ask for a login, so offer Chrome again.
+    if (inApp === 'android') { window.InApp.open(inApp); return; }
     window.open(url, '_blank', 'noopener');
     state.clicked.add(id);
     if (!step.verify) {
@@ -272,7 +276,8 @@
     window.addEventListener('focus', scheduleChecks);
     window.addEventListener('pageshow', scheduleChecks);
 
-    await countView();
+    // On Android the visit continues in Chrome, which counts it, so it isn't counted twice.
+    if (inApp !== 'android') await countView();
 
     // Someone already verified before: the lock opens with no extra steps.
     const pass = window.store.get(PASS_KEY, null);
@@ -283,12 +288,6 @@
     scheduleChecks();
   }
 
-  // Views are counted in the real browser, so a jump to Chrome isn't counted twice.
-  const inApp = window.InApp ? window.InApp.detect(navigator.userAgent) : null;
-  if (inApp && !window.InApp.stayed()) {
-    window.InApp.show(root, inApp, init);
-    window.InApp.autoOpen(inApp);
-  } else {
-    init();
-  }
+  // Waits for the post first: leaving for Chrome can cancel requests still loading.
+  init().finally(() => { if (inApp) window.InApp.autoOpen(inApp); });
 })();
