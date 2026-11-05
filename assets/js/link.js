@@ -6,9 +6,14 @@
   const PASS_KEY = 'miftah_pass';
   const doneKey = `miftah_done_${slug}`;
   const openedKey = `miftah_opened_${slug}`;
+  const checkingKey = `miftah_checking_${slug}`;
 
   let post = null;
-  const state = { done: new Set(), clicked: new Set(), msg: {}, busy: null, items: null, unlocking: false };
+  const state = { done: new Set(), clicked: new Set(), checking: new Set(), msg: {}, busy: null, items: null, unlocking: false };
+  // stepId -> time its button was pressed. Saved because phones often reload
+  // this tab while the visitor is away in the YouTube app.
+  const started = {};
+  const timers = {};
 
   const render = () => {
     root.innerHTML = window.renderLinkCard(post, state);
@@ -85,17 +90,37 @@
   function openStep(id) {
     const step = post.steps.find(s => s.id === id);
     const url = window.safeUrl(window.stepUrl(step));
-    if (!url) return;
+    if (!url || state.checking.has(id) || (!step.verify && state.done.has(id))) return;
     window.open(url, '_blank', 'noopener');
     state.clicked.add(id);
-    // Counted and saved the moment the button is pressed, so the lock is already open
-    // when the visitor returns. Phones don't reliably report that return, and may reload the tab.
-    if (!step.verify && !state.done.has(id)) {
-      state.done.add(id);
-      saveDone();
-      if (post.steps.every(s => state.done.has(s.id))) celebrate();
+    if (!step.verify) {
+      started[id] = Date.now();
+      window.store.set(checkingKey, started);
+      state.checking.add(id);
+      scheduleChecks();
     }
     delete state.msg[id];
+    render();
+  }
+
+  // Works from the time of the click, so it also runs while the visitor is on YouTube.
+  // Hidden tabs can delay timers, so returning to the page checks again right away.
+  function scheduleChecks() {
+    const wait = (C.checkSeconds || 15) * 1000;
+    let finished = false;
+    Object.keys(started).forEach(id => {
+      const left = wait - (Date.now() - started[id]);
+      clearTimeout(timers[id]);
+      if (left > 0) { timers[id] = setTimeout(scheduleChecks, left); return; }
+      delete started[id];
+      state.checking.delete(id);
+      state.done.add(id);
+      finished = true;
+    });
+    if (!finished) return;
+    window.store.set(checkingKey, started);
+    saveDone();
+    if (post.steps.every(s => state.done.has(s.id))) celebrate();
     render();
   }
 
@@ -236,6 +261,17 @@
       if (post.steps.some(s => s.id === id && !s.verify)) state.done.add(id);
     });
 
+    const saved = window.store.get(checkingKey, {});
+    Object.keys(saved).forEach(id => {
+      if (post.steps.some(s => s.id === id && !s.verify) && !state.done.has(id)) {
+        started[id] = saved[id];
+        state.checking.add(id);
+      }
+    });
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) scheduleChecks(); });
+    window.addEventListener('focus', scheduleChecks);
+    window.addEventListener('pageshow', scheduleChecks);
+
     await countView();
 
     // Someone already verified before: the lock opens with no extra steps.
@@ -244,5 +280,6 @@
       try { applyVerified(await window.DB.unlock(slug, { pass })); } catch {}
     }
     render();
+    scheduleChecks();
   })();
 })();

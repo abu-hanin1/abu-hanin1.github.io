@@ -126,6 +126,7 @@
     const done = s.done.has(step.id);
     const m = s.msg[step.id];
     const clicked = s.clicked.has(step.id);
+    const checking = s.checking.has(step.id);
     let verify = '';
     if (step.verify && !done) {
       verify = `<button class="verify-btn ${clicked ? 'hot' : ''}" data-act="verify" data-id="${esc(step.id)}" ${s.busy === step.id ? 'disabled' : ''}>
@@ -134,9 +135,9 @@
       </button>`;
     }
     return `<div class="step ${done ? 'done' : ''}">
-      <button class="step-btn" data-act="open" data-id="${esc(step.id)}" style="--brand:${pf.color};--brand-fg:${pf.fg}">
-        ${window.brandIcon(a ? a.p : 'web', 20)}
-        <span class="step-txt" dir="auto">${esc(window.stepText(step) || 'خطوة جديدة')}</span>
+      <button class="step-btn ${checking ? 'checking' : ''}" data-act="open" data-id="${esc(step.id)}" style="--brand:${pf.color};--brand-fg:${pf.fg}" ${checking || (done && !step.verify) ? 'disabled' : ''}>
+        ${checking ? '<span class="spinner" aria-hidden="true"></span>' : window.brandIcon(a ? a.p : 'web', 20)}
+        <span class="step-txt" dir="auto">${checking ? 'جاري التحقق...' : esc(window.stepText(step) || 'خطوة جديدة')}</span>
         ${done ? `<span class="step-ok">${ic('check', 18)}</span>` : ''}
       </button>
       ${verify}
@@ -166,7 +167,7 @@
 
   // state: {done:Set, clicked:Set, msg:{}, busy, items, unlocking, preview}
   window.renderLinkCard = function (post, state) {
-    const s = Object.assign({ done: new Set(), clicked: new Set(), msg: {}, busy: null, items: null, unlocking: false }, state);
+    const s = Object.assign({ done: new Set(), clicked: new Set(), checking: new Set(), msg: {}, busy: null, items: null, unlocking: false }, state);
     const theme = post.theme || {};
     const steps = post.steps || [];
     const total = steps.length;
@@ -195,6 +196,7 @@
         : `${total ? `<div class="prog"><span>الخطوات المطلوبة</span><b>${doneCount}/${total}</b>
             <i style="--p:${total ? (doneCount / total) * 100 : 0}%"></i></div>` : ''}
           <div class="steps">${steps.map(x => stepHtml(x, s)).join('')}</div>
+          ${total && ready ? `<div class="all-done">${ic('check', 18)} كل الخطوات اكتملت</div>` : ''}
           <button class="unlock-btn ${ready ? 'ready' : ''}" data-act="unlock" ${ready && !s.unlocking ? '' : 'disabled'}>
             ${ic(ready ? 'unlock' : 'lock', 24)}
             <span>${s.unlocking ? 'جاري الفتح...' : esc(theme.unlockLabel || 'افتح المحتوى')}</span>

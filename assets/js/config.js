@@ -9,4 +9,7 @@ window.SITE_CONFIG = {
   supabaseUrl: 'https://jyrcywuxqfandzerlrga.supabase.co',
   supabaseAnonKey: 'sb_publishable_4tt3LWss6QhyskTBnM7aCA_Aq4kw1c8',
   googleClientId: '',
+
+  // Seconds a step stays on "جاري التحقق" after its button is pressed, then it completes.
+  checkSeconds: 15,
 };
