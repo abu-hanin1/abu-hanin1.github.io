@@ -16,7 +16,7 @@
 
   window.randomSlug = () => {
     const abc = 'abcdefghjkmnpqrstuvwxyz23456789';
-    const bytes = crypto.getRandomValues(new Uint8Array(7));
+    const bytes = crypto.getRandomValues(new Uint8Array(5));
     return Array.from(bytes, b => abc[b % abc.length]).join('');
   };
 
