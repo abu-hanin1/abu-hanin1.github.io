@@ -398,9 +398,9 @@
           </div>
           <input data-step-label value="${esc(s.label || '')}" dir="auto" maxlength="60" placeholder="نص الزر للمشاهد (اختياري): ${esc(a.label)}" aria-label="نص الزر للمشاهد">
           <small class="muted step-note">الحساب أو الرابط مش بيظهر مكتوب للمشاهد، بيظهر له نص الزر بس.</small>
-          ${a.verifiable ? `<label class="check verify-check ${googleReady() ? '' : 'off'}">
-              <input type="checkbox" data-step-verify ${s.verify ? 'checked' : ''} ${googleReady() ? '' : 'disabled'}>
-              تحقق حقيقي من الاشتراك بحساب جوجل${googleReady() ? '' : ' (فعّله من الإعدادات أولًا)'}</label>` : ''}
+          ${a.verifiable && googleReady() ? `<label class="check verify-check">
+              <input type="checkbox" data-step-verify ${s.verify ? 'checked' : ''}>
+              تحقق حقيقي من الاشتراك بحساب جوجل</label>` : ''}
         </div>
         <button class="icon-btn danger" data-step-del aria-label="حذف">${ic('x', 18)}</button>
       </div>`;
