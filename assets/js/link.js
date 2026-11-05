@@ -248,7 +248,7 @@
     try { await window.DB.registerView(slug); } catch {}
   }
 
-  (async function init() {
+  async function init() {
     if (!slug) return message('الرابط غير صحيح', 'تأكد من الرابط وحاول تاني.');
     try { post = await window.DB.getPost(slug); }
     catch { return message('تعذر تحميل الصفحة', 'تأكد من اتصالك بالإنترنت وحاول تاني.'); }
@@ -281,5 +281,14 @@
     }
     render();
     scheduleChecks();
-  })();
+  }
+
+  // Views are counted in the real browser, so a jump to Chrome isn't counted twice.
+  const inApp = window.InApp ? window.InApp.detect(navigator.userAgent) : null;
+  if (inApp && !window.InApp.stayed()) {
+    window.InApp.show(root, inApp, init);
+    window.InApp.autoOpen(inApp);
+  } else {
+    init();
+  }
 })();
