@@ -221,13 +221,6 @@ body.link-page { display: flex; align-items: flex-start; }
 .step-btn.checking { background: var(--surface-3); color: #cdd3da; border-color: var(--line); }
 .spinner { width: 20px; height: 20px; flex: none; border-radius: 50%; border: 3px solid rgba(255, 255, 255, .25); border-top-color: var(--accent); animation: spin .8s linear infinite; }
 .all-done { display: flex; align-items: center; justify-content: center; gap: 7px; min-height: 42px; margin-top: 10px; border-radius: 11px; border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); font-weight: 800; font-size: 15px; }
-.inapp { display: flex; flex-direction: column; gap: 12px; max-width: 460px; margin: 6vh auto; padding: 26px 20px; text-align: center; }
-.inapp h1 { font-size: 24px; }
-.inapp-ic { display: grid; place-items: center; width: 64px; height: 64px; margin: 0 auto; border-radius: 50%; background: var(--accent); color: var(--accent-ink); }
-.inapp .btn { min-height: 52px; font-size: 16px; }
-.inapp-or { padding: 12px; border-radius: 12px; background: var(--surface-2); font-size: 15px; font-weight: 600; }
-.inapp-or b { font-weight: 900; }
-.inapp-stay { min-height: 40px; color: var(--muted); font-weight: 700; font-size: 14px; text-decoration: underline; }
 .step-msg { margin-top: 7px; padding: 8px 12px; border-radius: 10px; font-size: 14px; font-weight: 700; }
 .step-msg.err { background: rgba(255, 107, 107, .14); color: #ffb3b3; }
 .step-msg.info { background: rgba(16, 224, 138, .12); color: #7ff5c4; }
