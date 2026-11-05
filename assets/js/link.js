@@ -157,9 +157,10 @@
       const ok = await window.copyText(it ? it.value : '');
       window.toast(ok ? 'تم النسخ!' : 'تعذر النسخ', ok ? 'ok' : 'err');
     } else if (act === 'share') {
-      const data = { title: post.title, url: location.href };
+      const shortUrl = new URL(encodeURIComponent(slug), new URL('./', location.href)).href;
+      const data = { title: post.title, url: shortUrl };
       if (navigator.share) { try { await navigator.share(data); } catch {} }
-      else { await window.copyText(location.href); window.toast('تم نسخ الرابط!', 'ok'); }
+      else { await window.copyText(shortUrl); window.toast('تم نسخ الرابط!', 'ok'); }
     }
   });
 

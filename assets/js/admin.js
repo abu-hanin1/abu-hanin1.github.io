@@ -5,7 +5,10 @@
   const { esc, uiIcon: ic, toast, fmtNum, fmtDate, copyText } = window;
   const app = document.getElementById('app');
 
-  const linkFor = slug => new URL(`link.html?s=${encodeURIComponent(slug)}`, location.href).href;
+  // Short link: 404.html turns /my-link into the post page.
+  const linkFor = slug => new URL(encodeURIComponent(slug), new URL('./', location.href)).href;
+  // These names already belong to real pages, so they can't be used as short links.
+  const RESERVED_SLUGS = ['index', 'link', 'admin', '404', 'assets', 'supabase', 'readme'];
   const googleReady = () => DB.isDemo || !!C.googleClientId;
   const newId = () => Math.random().toString(36).slice(2, 10);
 
@@ -223,7 +226,7 @@
                   ${[['public', 'عام', 'يظهر في الصفحة الرئيسية'], ['private', 'خاص', 'بالرابط فقط'], ['draft', 'مسودة', 'غير متاح']]
                     .map(([k, l, h]) => `<button data-status="${k}" title="${h}" class="${draft.status === k ? 'on' : ''}">${l}</button>`).join('')}
                 </div></div>
-              <label class="fld"><span>الرابط المخصص</span>
+              <label class="fld"><span>الرابط المختصر</span>
                 <input data-slug value="${esc(draft.slug)}" dir="ltr" maxlength="60" placeholder="my-link">
                 <small class="muted" dir="ltr" id="slugPreview"></small></label>
               <label class="fld"><span>نص زر الفتح</span>
@@ -589,7 +592,8 @@
       if (el) { el.closest('details')?.setAttribute('open', ''); el.focus(); el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
       return false;
     };
-    if (!/^[a-z0-9][a-z0-9-]{1,60}$/.test(draft.slug)) return fail('الرابط المخصص لازم يكون حرفين على الأقل، إنجليزي وأرقام وشرطات فقط.', '[data-slug]');
+    if (!/^[a-z0-9][a-z0-9-]{1,60}$/.test(draft.slug)) return fail('الرابط المختصر لازم يكون حرفين على الأقل، إنجليزي وأرقام وشرطات فقط.', '[data-slug]');
+    if (RESERVED_SLUGS.includes(draft.slug)) return fail('الاسم ده محجوز للموقع. اختار اسم تاني للرابط المختصر.', '[data-slug]');
     if (draft.status === 'draft') return true;
     if (!draft.title.trim()) return fail('اكتب عنوان البوست.', '[data-f=title]');
     if (!draft.items.length) return fail('أضف عنصر واحد على الأقل في المحتوى المقفول.', '.add-item button');
@@ -622,7 +626,7 @@
       document.querySelector('.page-head h1').innerHTML = `${ic('unlock', 28)} تعديل الرابط`;
       showSaved();
     } catch (e) {
-      if (e.message === 'slug_taken') { toast('الرابط المخصص مستخدم قبل كده. اختار اسم تاني.', 'err'); document.querySelector('[data-slug]').closest('details').open = true; }
+      if (e.message === 'slug_taken') { toast('الرابط المختصر مستخدم قبل كده. اختار اسم تاني.', 'err'); document.querySelector('[data-slug]').closest('details').open = true; }
       else toast(e.message || 'تعذر الحفظ. حاول تاني.', 'err');
     }
     btn.disabled = false;
@@ -633,12 +637,12 @@
     const d = document.createElement('dialog');
     d.className = 'modal small';
     d.innerHTML = `<div class="saved-ic">${ic('unlock', 34)}</div>
-      <h2>${draft.status === 'draft' ? 'تم حفظ المسودة' : 'الرابط جاهز!'}</h2>
-      ${draft.status === 'draft' ? '<p class="muted">الرابط مش هيفتح للمشاهدين غير لما تغيّر الحالة إلى عام أو خاص.</p>' : `<input class="saved-url" readonly dir="ltr" value="${esc(url)}" aria-label="الرابط">`}
+      <h2>${draft.status === 'draft' ? 'تم حفظ المسودة' : 'رابطك المختصر جاهز!'}</h2>
+      ${draft.status === 'draft' ? '<p class="muted">الرابط مش هيفتح للمشاهدين غير لما تغيّر الحالة إلى عام أو خاص.</p>' : `<input class="saved-url" readonly dir="ltr" value="${esc(url)}" aria-label="الرابط المختصر">`}
       <div class="modal-acts">
         <button class="btn" data-close>تمام</button>
         ${draft.status === 'draft' ? '' : `<a class="btn" href="${esc(url)}" target="_blank" rel="noopener">فتح الصفحة</a>
-        <button class="btn primary" data-copy>${ic('copy', 18)} نسخ الرابط</button>`}
+        <button class="btn primary" data-copy>${ic('copy', 18)} نسخ الرابط المختصر</button>`}
       </div>`;
     document.body.appendChild(d);
     d.showModal();
