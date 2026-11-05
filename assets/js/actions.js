@@ -28,57 +28,57 @@ window.ACTION_CATEGORIES = [
 
 // input: 'handle' accepts @name or a URL. 'url' needs a full URL.
 window.ACTIONS = [
-  { id: 'yt_subscribe', p: 'youtube', label: 'اشترك في القناة', verb: 'اشترك في', input: 'handle', popular: true, verifiable: true },
-  { id: 'yt_bell', p: 'youtube', label: 'اشترك وفعّل الإشعارات', verb: 'اشترك وفعّل الجرس في', input: 'handle', verifiable: true },
-  { id: 'yt_like', p: 'youtube', label: 'أعجب بالفيديو', verb: 'أعجب بالفيديو', input: 'url', popular: true },
-  { id: 'yt_comment', p: 'youtube', label: 'علّق على الفيديو', verb: 'علّق على الفيديو', input: 'url', popular: true },
-  { id: 'yt_like_comment', p: 'youtube', label: 'أعجب بالفيديو وعلّق عليه', verb: 'أعجب بالفيديو وعلّق عليه', input: 'url' },
-  { id: 'yt_watch', p: 'youtube', label: 'شاهد الفيديو', verb: 'شاهد الفيديو', input: 'url', popular: true },
-  { id: 'yt_share', p: 'youtube', label: 'شارك الفيديو', verb: 'شارك الفيديو', input: 'url' },
+  { id: 'yt_subscribe', p: 'youtube', label: 'اشترك في القناة', input: 'handle', popular: true, verifiable: true },
+  { id: 'yt_bell', p: 'youtube', label: 'اشترك وفعّل الإشعارات', input: 'handle', verifiable: true },
+  { id: 'yt_like', p: 'youtube', label: 'أعجب بالفيديو', input: 'url', popular: true },
+  { id: 'yt_comment', p: 'youtube', label: 'علّق على الفيديو', input: 'url', popular: true },
+  { id: 'yt_like_comment', p: 'youtube', label: 'أعجب بالفيديو وعلّق عليه', input: 'url' },
+  { id: 'yt_watch', p: 'youtube', label: 'شاهد الفيديو', input: 'url', popular: true },
+  { id: 'yt_share', p: 'youtube', label: 'شارك الفيديو', input: 'url' },
 
-  { id: 'fb_follow', p: 'facebook', label: 'تابع الصفحة', verb: 'تابع صفحة', input: 'handle', popular: true },
-  { id: 'fb_like', p: 'facebook', label: 'أعجب بالمنشور', verb: 'أعجب بالمنشور', input: 'url' },
-  { id: 'fb_comment', p: 'facebook', label: 'علّق على المنشور', verb: 'علّق على المنشور', input: 'url' },
-  { id: 'fb_share', p: 'facebook', label: 'شارك المنشور', verb: 'شارك المنشور', input: 'url' },
-  { id: 'fb_group', p: 'facebook', label: 'انضم إلى الجروب', verb: 'انضم إلى الجروب', input: 'url' },
+  { id: 'fb_follow', p: 'facebook', label: 'تابع الصفحة', input: 'handle', popular: true },
+  { id: 'fb_like', p: 'facebook', label: 'أعجب بالمنشور', input: 'url' },
+  { id: 'fb_comment', p: 'facebook', label: 'علّق على المنشور', input: 'url' },
+  { id: 'fb_share', p: 'facebook', label: 'شارك المنشور', input: 'url' },
+  { id: 'fb_group', p: 'facebook', label: 'انضم إلى الجروب', input: 'url' },
 
-  { id: 'ig_follow', p: 'instagram', label: 'تابع الحساب', verb: 'تابع', input: 'handle', popular: true },
-  { id: 'ig_like', p: 'instagram', label: 'أعجب بالمنشور', verb: 'أعجب بالمنشور', input: 'url' },
-  { id: 'ig_comment', p: 'instagram', label: 'علّق على المنشور', verb: 'علّق على المنشور', input: 'url' },
-  { id: 'ig_audio', p: 'instagram', label: 'استخدم هذا الصوت', verb: 'استخدم هذا الصوت', input: 'url' },
+  { id: 'ig_follow', p: 'instagram', label: 'تابع الحساب', input: 'handle', popular: true },
+  { id: 'ig_like', p: 'instagram', label: 'أعجب بالمنشور', input: 'url' },
+  { id: 'ig_comment', p: 'instagram', label: 'علّق على المنشور', input: 'url' },
+  { id: 'ig_audio', p: 'instagram', label: 'استخدم هذا الصوت', input: 'url' },
 
-  { id: 'tt_follow', p: 'tiktok', label: 'تابع الحساب', verb: 'تابع', input: 'handle', popular: true },
-  { id: 'tt_like', p: 'tiktok', label: 'أعجب بالفيديو', verb: 'أعجب بالفيديو', input: 'url' },
-  { id: 'tt_comment', p: 'tiktok', label: 'علّق على الفيديو', verb: 'علّق على الفيديو', input: 'url' },
-  { id: 'tt_share', p: 'tiktok', label: 'شارك الفيديو', verb: 'شارك الفيديو', input: 'url' },
+  { id: 'tt_follow', p: 'tiktok', label: 'تابع الحساب', input: 'handle', popular: true },
+  { id: 'tt_like', p: 'tiktok', label: 'أعجب بالفيديو', input: 'url' },
+  { id: 'tt_comment', p: 'tiktok', label: 'علّق على الفيديو', input: 'url' },
+  { id: 'tt_share', p: 'tiktok', label: 'شارك الفيديو', input: 'url' },
 
-  { id: 'x_follow', p: 'x', label: 'تابع الحساب', verb: 'تابع', input: 'handle', popular: true },
-  { id: 'x_like', p: 'x', label: 'أعجب بالمنشور', verb: 'أعجب بالمنشور', input: 'url' },
-  { id: 'x_reply', p: 'x', label: 'رد على المنشور', verb: 'رد على المنشور', input: 'url' },
-  { id: 'x_repost', p: 'x', label: 'أعد نشر المنشور', verb: 'أعد نشر المنشور', input: 'url' },
+  { id: 'x_follow', p: 'x', label: 'تابع الحساب', input: 'handle', popular: true },
+  { id: 'x_like', p: 'x', label: 'أعجب بالمنشور', input: 'url' },
+  { id: 'x_reply', p: 'x', label: 'رد على المنشور', input: 'url' },
+  { id: 'x_repost', p: 'x', label: 'أعد نشر المنشور', input: 'url' },
 
-  { id: 'th_follow', p: 'threads', label: 'تابع الحساب', verb: 'تابع', input: 'handle' },
-  { id: 'sc_add', p: 'snapchat', label: 'أضف الحساب', verb: 'أضف', input: 'handle' },
-  { id: 'pin_follow', p: 'pinterest', label: 'تابع الحساب', verb: 'تابع', input: 'handle' },
+  { id: 'th_follow', p: 'threads', label: 'تابع الحساب', input: 'handle' },
+  { id: 'sc_add', p: 'snapchat', label: 'أضف الحساب', input: 'handle' },
+  { id: 'pin_follow', p: 'pinterest', label: 'تابع الحساب', input: 'handle' },
 
-  { id: 'tw_follow', p: 'twitch', label: 'تابع القناة', verb: 'تابع', input: 'handle' },
-  { id: 'kick_follow', p: 'kick', label: 'تابع القناة', verb: 'تابع', input: 'handle' },
+  { id: 'tw_follow', p: 'twitch', label: 'تابع القناة', input: 'handle' },
+  { id: 'kick_follow', p: 'kick', label: 'تابع القناة', input: 'handle' },
 
-  { id: 'tg_join', p: 'telegram', label: 'انضم إلى القناة', verb: 'انضم إلى', input: 'handle', popular: true },
-  { id: 'wa_channel', p: 'whatsapp', label: 'انضم إلى القناة', verb: 'انضم إلى قناة واتساب', input: 'url', popular: true },
-  { id: 'wa_group', p: 'whatsapp', label: 'انضم إلى الجروب', verb: 'انضم إلى جروب واتساب', input: 'url' },
-  { id: 'dc_join', p: 'discord', label: 'انضم إلى السيرفر', verb: 'انضم إلى سيرفر ديسكورد', input: 'url', popular: true },
+  { id: 'tg_join', p: 'telegram', label: 'انضم إلى القناة', input: 'handle', popular: true },
+  { id: 'wa_channel', p: 'whatsapp', label: 'انضم إلى القناة', input: 'url', popular: true },
+  { id: 'wa_group', p: 'whatsapp', label: 'انضم إلى الجروب', input: 'url' },
+  { id: 'dc_join', p: 'discord', label: 'انضم إلى السيرفر', input: 'url', popular: true },
 
-  { id: 'sp_follow', p: 'spotify', label: 'تابع الفنان', verb: 'تابع على سبوتيفاي', input: 'url' },
-  { id: 'sp_save', p: 'spotify', label: 'احفظ الأغنية', verb: 'احفظ الأغنية', input: 'url' },
-  { id: 'sc_follow', p: 'soundcloud', label: 'تابع الحساب', verb: 'تابع', input: 'handle' },
+  { id: 'sp_follow', p: 'spotify', label: 'تابع الفنان', input: 'url' },
+  { id: 'sp_save', p: 'spotify', label: 'احفظ الأغنية', input: 'url' },
+  { id: 'sc_follow', p: 'soundcloud', label: 'تابع الحساب', input: 'handle' },
 
-  { id: 'st_wishlist', p: 'steam', label: 'أضف اللعبة للمفضلة', verb: 'أضف اللعبة للمفضلة', input: 'url' },
-  { id: 'rb_join', p: 'roblox', label: 'انضم إلى الجروب', verb: 'انضم إلى الجروب', input: 'url' },
+  { id: 'st_wishlist', p: 'steam', label: 'أضف اللعبة للمفضلة', input: 'url' },
+  { id: 'rb_join', p: 'roblox', label: 'انضم إلى الجروب', input: 'url' },
 
-  { id: 'gh_follow', p: 'github', label: 'تابع الحساب', verb: 'تابع', input: 'handle' },
-  { id: 'gh_star', p: 'github', label: 'ضع نجمة للمشروع', verb: 'ضع نجمة للمشروع', input: 'url' },
-  { id: 'web_visit', p: 'web', label: 'زر صفحة', verb: 'زر الصفحة', input: 'url', popular: true },
+  { id: 'gh_follow', p: 'github', label: 'تابع الحساب', input: 'handle' },
+  { id: 'gh_star', p: 'github', label: 'ضع نجمة للمشروع', input: 'url' },
+  { id: 'web_visit', p: 'web', label: 'زر صفحة', input: 'url', popular: true },
 ];
 
 (function () {
@@ -120,19 +120,13 @@ window.ACTIONS = [
     return url;
   };
 
-  // Button text, e.g. "اشترك في @Abu-Hanin".
+  // Button text the visitor sees. The account name is never shown:
+  // the owner's custom text if set, otherwise e.g. "اشترك في القناة".
   window.stepText = function (step) {
+    const custom = String(step.label || '').trim();
+    if (custom) return custom;
     const a = window.getAction(step.action);
-    if (!a) return step.label || '';
-    if (step.label) return step.label;
-    if (a.input !== 'handle') return a.verb;
-    let t = String(step.target || '').trim();
-    if (isUrl(t)) {
-      const m = t.match(/@[^/?#]+/) || t.match(/\/([^/?#]+)\/?(?:[?#].*)?$/);
-      t = m ? decodeURIComponent(m[1] || m[0]) : '';
-      if (t && t[0] !== '@' && m[0][0] !== '@') t = '@' + t;
-    } else if (t && t[0] !== '@') t = '@' + t;
-    return t ? { verb: a.verb, target: t } : a.verb;
+    return a ? a.label : '';
   };
 
   window.brandIcon = function (platform, size) {

@@ -112,12 +112,6 @@
     return `<div class="teaser"><h3>${ic('gift', 18)} هتحصل على إيه؟</h3><ul>${chips}</ul></div>`;
   }
 
-  function stepLabelHtml(step) {
-    const t = window.stepText(step);
-    if (t && typeof t === 'object') return `${esc(t.verb)} <bdi dir="ltr">${esc(t.target)}</bdi>`;
-    return esc(t || 'خطوة جديدة');
-  }
-
   function stepHtml(step, s) {
     const a = window.getAction(step.action);
     const pf = a ? window.PLATFORMS[a.p] : window.PLATFORMS.web;
@@ -134,7 +128,7 @@
     return `<div class="step ${done ? 'done' : ''}">
       <button class="step-btn" data-act="open" data-id="${esc(step.id)}" style="--brand:${pf.color};--brand-fg:${pf.fg}">
         ${window.brandIcon(a ? a.p : 'web', 20)}
-        <span class="step-txt">${stepLabelHtml(step)}</span>
+        <span class="step-txt" dir="auto">${esc(window.stepText(step) || 'خطوة جديدة')}</span>
         ${done ? `<span class="step-ok">${ic('check', 18)}</span>` : ''}
       </button>
       ${verify}

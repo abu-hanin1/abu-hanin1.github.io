@@ -374,8 +374,10 @@
         <div class="step-fields">
           <div class="step-line">
             <button class="action-pick" data-step-pick>${window.brandIcon(a.p, 18)}<span title="${esc(pf.name)}">${esc(a.label)}</span></button>
-            <input data-step-target value="${esc(s.target || '')}" dir="ltr" placeholder="${esc(ph)}">
+            <input data-step-target value="${esc(s.target || '')}" dir="ltr" placeholder="${esc(ph)}" aria-label="الحساب أو الرابط (لا يظهر للمشاهد)">
           </div>
+          <input data-step-label value="${esc(s.label || '')}" dir="auto" maxlength="60" placeholder="نص الزر للمشاهد (اختياري): ${esc(a.label)}" aria-label="نص الزر للمشاهد">
+          <small class="muted step-note">الحساب أو الرابط مش بيظهر مكتوب للمشاهد، بيظهر له نص الزر بس.</small>
           ${a.verifiable ? `<label class="check verify-check ${googleReady() ? '' : 'off'}">
               <input type="checkbox" data-step-verify ${s.verify ? 'checked' : ''} ${googleReady() ? '' : 'disabled'}>
               تحقق حقيقي من الاشتراك بحساب جوجل${googleReady() ? '' : ' (فعّله من الإعدادات أولًا)'}</label>` : ''}
@@ -479,6 +481,9 @@
       } else if ('stepTarget' in el.dataset) {
         const s = draft.steps.find(x => x.id === el.closest('.sort-row').dataset.id);
         s.target = el.value; touch();
+      } else if ('stepLabel' in el.dataset) {
+        const s = draft.steps.find(x => x.id === el.closest('.sort-row').dataset.id);
+        s.label = el.value; touch();
       } else if (el.id === 'expires') {
         draft.expires_at = el.value ? new Date(el.value).toISOString() : null; dirty = true;
       }
