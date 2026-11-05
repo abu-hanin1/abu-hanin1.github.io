@@ -1,0 +1,205 @@
+// Shared helpers and the public card, used by both the visitor page and the editor preview.
+(function () {
+  const PATHS = {
+    lock: '<rect x="4.5" y="11" width="15" height="10" rx="2.5"/><path d="M8 11V7.5a4 4 0 0 1 8 0V11"/>',
+    unlock: '<rect x="4.5" y="11" width="15" height="10" rx="2.5"/><path d="M8 11V7.5a4 4 0 0 1 7.6-1.7"/>',
+    link: '<path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1 1"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1-1"/>',
+    file: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>',
+    text: '<path d="M5 6h14M5 11h14M5 16h9"/>',
+    plus: '<path d="M12 5v14M5 12h14"/>',
+    eye: '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/>',
+    share: '<path d="M12 15V4M8 7.5 12 3.5l4 4"/><path d="M6 11H5a1 1 0 0 0-1 1v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7a1 1 0 0 0-1-1h-1"/>',
+    check: '<path d="m5 12.5 4.5 4.5L19 7"/>',
+    copy: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4.5A1.5 1.5 0 0 1 3 13.5v-9A1.5 1.5 0 0 1 4.5 3h9A1.5 1.5 0 0 1 15 4.5V5"/>',
+    download: '<path d="M12 4v11M7.5 11 12 15.5 16.5 11M5 20h14"/>',
+    external: '<path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/>',
+    x: '<path d="M6 6l12 12M18 6 6 18"/>',
+    grip: '<circle cx="9" cy="6" r="1.2"/><circle cx="15" cy="6" r="1.2"/><circle cx="9" cy="12" r="1.2"/><circle cx="15" cy="12" r="1.2"/><circle cx="9" cy="18" r="1.2"/><circle cx="15" cy="18" r="1.2"/>',
+    edit: '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/>',
+    trash: '<path d="M4 7h16M9 7V4h6v3M6.5 7l1 13h9l1-13"/>',
+    search: '<circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/>',
+    chart: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+    image: '<rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="8.5" cy="9.5" r="1.7"/><path d="m21 16-5-5L5 20"/>',
+    upload: '<path d="M12 16V5M7.5 9.5 12 5l4.5 4.5M5 20h14"/>',
+    phone: '<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/>',
+    desktop: '<rect x="2.5" y="4" width="19" height="13" rx="2"/><path d="M8.5 21h7M12 17v4"/>',
+    clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+    sliders: '<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>',
+    brush: '<path d="M20 4 10.5 13.5"/><path d="M10.5 13.5c-3-.5-5 1.5-5 4 0 1-.8 1.8-2 2 2.500 1.500 8 1.500 9-3 .3-1.200-.6-2.500-2-3z"/>',
+    gift: '<rect x="4" y="9" width="16" height="11" rx="2"/><path d="M2.500 9h19M12 9v11M12 9S10 3.500 7.500 4.500 8 9 12 9zm0 0s2-5.500 4.500-4.500S16 9 12 9z"/>',
+    logout: '<path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4M15 8l4 4-4 4M19 12H9"/>',
+    dup: '<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/>',
+  };
+  window.uiIcon = (name, size = 20) =>
+    `<svg class="ic" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.200" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${PATHS[name] || ''}</svg>`;
+  const ic = window.uiIcon;
+
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  window.esc = esc;
+
+  // Only allow web links in href/src: blocks javascript: and similar.
+  window.safeUrl = u => {
+    const v = String(u || '').trim();
+    if (/^https?:\/\//i.test(v) || /^data:(image\/|application\/pdf)/i.test(v)) return v;
+    return '';
+  };
+  const safeImg = u => (/^(https?:\/\/|data:image\/)/i.test(String(u || '').trim()) ? String(u).trim() : '');
+  window.safeImg = safeImg;
+  // CSS-safe url() argument
+  const cssUrl = u => `url("${u.replace(/["\\\n\r]/g, encodeURIComponent)}")`;
+
+  const nf = new Intl.NumberFormat('ar-EG-u-nu-latn', { notation: 'compact', maximumFractionDigits: 1 });
+  window.fmtNum = n => nf.format(Number(n) || 0);
+
+  window.fmtDate = d => new Date(d).toLocaleDateString('ar-EG-u-nu-latn', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  window.toast = function (msg, kind) {
+    let box = document.getElementById('toasts');
+    if (!box) {
+      box = document.createElement('div');
+      box.id = 'toasts'; box.setAttribute('role', 'status'); box.setAttribute('aria-live', 'polite');
+      document.body.appendChild(box);
+    }
+    const t = document.createElement('div');
+    t.className = 'toast ' + (kind || '');
+    t.textContent = msg;
+    box.appendChild(t);
+    setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 300); }, 2800);
+  };
+
+  window.copyText = async function (text) {
+    try { await navigator.clipboard.writeText(text); return true; } catch {}
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(ta); ta.select();
+    let ok = false; try { ok = document.execCommand('copy'); } catch {}
+    ta.remove();
+    return ok;
+  };
+
+  window.THEMES = {
+    cover: { name: 'من صورة البوست' },
+    midnight: { name: 'ليلي', css: 'linear-gradient(160deg,#10151f,#0b0d11 70%)' },
+    emerald: { name: 'زمردي', css: 'linear-gradient(160deg,#07342a,#0b0f0f 75%)' },
+    royal: { name: 'ملكي', css: 'linear-gradient(160deg,#17235c,#0c0d14 75%)' },
+    violet: { name: 'بنفسجي', css: 'linear-gradient(160deg,#3a1560,#0e0b14 75%)' },
+    ember: { name: 'ناري', css: 'linear-gradient(160deg,#5a1d10,#100b0a 75%)' },
+    plain: { name: 'سادة', css: '#0d0f12' },
+  };
+
+  window.ACCENTS = ['#10e08a', '#ffc53d', '#4da3ff', '#ff6b6b', '#c084fc', '#2dd4bf'];
+
+  window.bgStyle = function (post) {
+    const key = (post.theme && post.theme.bg) || 'cover';
+    if (key === 'cover' && safeImg(post.cover_url)) return `--bg-img:${cssUrl(safeImg(post.cover_url))}`;
+    const t = window.THEMES[key] || window.THEMES.midnight;
+    return `--bg-css:${t.css || window.THEMES.midnight.css}`;
+  };
+
+  const TYPE = {
+    url: { icon: 'link', one: 'رابط', many: 'روابط' },
+    file: { icon: 'file', one: 'ملف', many: 'ملفات' },
+    text: { icon: 'text', one: 'برومبت / نص', many: 'برومبتات / نصوص' },
+  };
+  window.ITEM_TYPES = TYPE;
+
+  function teaser(summary) {
+    if (!summary || !summary.length) return '';
+    const counts = {};
+    summary.forEach(i => { counts[i.type] = (counts[i.type] || 0) + 1; });
+    const chips = Object.keys(TYPE).filter(k => counts[k]).map(k =>
+      `<li>${ic(TYPE[k].icon, 17)}<b>${counts[k]}</b> ${counts[k] > 1 ? TYPE[k].many : TYPE[k].one}</li>`).join('');
+    return `<div class="teaser"><h3>${ic('gift', 18)} هتحصل على إيه؟</h3><ul>${chips}</ul></div>`;
+  }
+
+  function stepLabelHtml(step) {
+    const t = window.stepText(step);
+    if (t && typeof t === 'object') return `${esc(t.verb)} <bdi dir="ltr">${esc(t.target)}</bdi>`;
+    return esc(t || 'خطوة جديدة');
+  }
+
+  function stepHtml(step, s) {
+    const a = window.getAction(step.action);
+    const pf = a ? window.PLATFORMS[a.p] : window.PLATFORMS.web;
+    const done = s.done.has(step.id);
+    const m = s.msg[step.id];
+    const clicked = s.clicked.has(step.id);
+    let verify = '';
+    if (step.verify && !done) {
+      verify = `<button class="verify-btn ${clicked ? 'hot' : ''}" data-act="verify" data-id="${esc(step.id)}" ${s.busy === step.id ? 'disabled' : ''}>
+        <span class="g-mark" aria-hidden="true">G</span>
+        ${s.busy === step.id ? 'جاري التحقق...' : clicked ? 'اشتركت؟ اضغط هنا للتحقق بحساب جوجل' : 'مشترك من قبل؟ تحقق بحساب جوجل'}
+      </button>`;
+    }
+    return `<div class="step ${done ? 'done' : ''}">
+      <button class="step-btn" data-act="open" data-id="${esc(step.id)}" style="--brand:${pf.color};--brand-fg:${pf.fg}">
+        ${window.brandIcon(a ? a.p : 'web', 20)}
+        <span class="step-txt">${stepLabelHtml(step)}</span>
+        ${done ? `<span class="step-ok">${ic('check', 18)}</span>` : ''}
+      </button>
+      ${verify}
+      ${m ? `<p class="step-msg ${m.kind || ''}" role="alert">${esc(m.text)}</p>` : ''}
+    </div>`;
+  }
+
+  function itemHtml(it) {
+    const label = esc(it.label || TYPE[it.type]?.one || '');
+    if (it.type === 'text') {
+      return `<div class="got got-text">
+        <div class="got-head">${ic('text', 18)}<b>${label}</b>
+          <button class="btn sm" data-act="copy" data-id="${esc(it.id)}">${ic('copy', 16)} نسخ</button></div>
+        <pre dir="auto">${esc(it.value)}</pre></div>`;
+    }
+    const url = window.safeUrl(it.value);
+    if (!url) return '';
+    if (it.type === 'file') {
+      const href = url.includes('supabase.co/storage') ? `${url}?download=${encodeURIComponent(it.fileName || 'file')}` : url;
+      return `<a class="got got-link" href="${esc(href)}" download="${esc(it.fileName || '')}" target="_blank" rel="noopener">
+        ${ic('file', 20)}<span><b>${label}</b><small dir="auto">${esc(it.fileName || 'ملف')}</small></span><em>${ic('download', 18)} تحميل</em></a>`;
+    }
+    return `<a class="got got-link" href="${esc(url)}" target="_blank" rel="noopener noreferrer">
+      ${ic('link', 20)}<span><b>${label}</b></span><em>${ic('external', 18)} فتح</em></a>`;
+  }
+
+  // state: {done:Set, clicked:Set, msg:{}, busy, items, unlocking, preview}
+  window.renderLinkCard = function (post, state) {
+    const s = Object.assign({ done: new Set(), clicked: new Set(), msg: {}, busy: null, items: null, unlocking: false }, state);
+    const theme = post.theme || {};
+    const steps = post.steps || [];
+    const total = steps.length;
+    const doneCount = steps.filter(x => s.done.has(x.id)).length;
+    const ready = doneCount === total;
+    const cover = safeImg(post.cover_url);
+    const chips = [
+      theme.hideUnlocks ? '' : `<span class="chip">${ic('unlock', 15)}<b>${window.fmtNum(post.unlocks)}</b> فتحوا الرابط</span>`,
+      theme.hideViews ? '' : `<span class="chip">${ic('eye', 15)}<b>${window.fmtNum(post.views)}</b> مشاهدة</span>`,
+    ].join('');
+    const opened = !!s.items;
+    return `<article class="lk-card" style="--accent:${esc(theme.accent || '#10e08a')}">
+      <div class="lk-info">
+        ${cover ? `<img class="lk-cover" src="${esc(cover)}" alt="">` : `<div class="lk-cover ph">${ic('image', 40)}</div>`}
+        <div class="lk-head">
+          <h1 dir="auto">${esc(post.title) || 'عنوان البوست'}</h1>
+          <button class="round" data-act="share" aria-label="مشاركة الرابط">${ic('share', 20)}</button>
+        </div>
+        <div class="chips">${chips}</div>
+        ${post.description ? `<p class="lk-desc" dir="auto">${esc(post.description)}</p>` : ''}
+        ${opened ? '' : teaser(post.items_summary)}
+      </div>
+      <div class="lk-side">
+        ${opened ? `<div class="got-title">${ic('unlock', 22)} اتفتح! دي حاجتك</div>
+          <div class="got-list">${s.items.map(itemHtml).join('') || '<p class="muted">لا يوجد محتوى بعد.</p>'}</div>`
+        : `${total ? `<div class="prog"><span>الخطوات المطلوبة</span><b>${doneCount}/${total}</b>
+            <i style="--p:${total ? (doneCount / total) * 100 : 0}%"></i></div>` : ''}
+          <div class="steps">${steps.map(x => stepHtml(x, s)).join('')}</div>
+          <button class="unlock-btn ${ready ? 'ready' : ''}" data-act="unlock" ${ready && !s.unlocking ? '' : 'disabled'}>
+            ${ic(ready ? 'unlock' : 'lock', 24)}
+            <span>${s.unlocking ? 'جاري الفتح...' : esc(theme.unlockLabel || 'افتح المحتوى')}</span>
+          </button>
+          <p class="unlock-hint">${ready ? 'القفل اتفتح! اضغط علشان تحصل على المحتوى' : 'كمّل كل الخطوات اللي فوق الأول'}</p>
+          <div class="how"><b>إزاي تفتح الرابط؟</b>
+            <span>اضغط على الزر، نفّذ الخطوة، وارجع لنفس الصفحة هتلاقي القفل مفتوح. <strong>مجانًا</strong> وبدون أي تعقيد.</span></div>`}
+      </div>
+    </article>`;
+  };
+})();
