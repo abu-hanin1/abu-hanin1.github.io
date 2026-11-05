@@ -106,10 +106,11 @@
       return fresh;
     },
     async deletePost(id) { demoSave(demoPosts().filter(x => x.id !== id)); },
-    async upload(file) {
+    async upload(file, folder, onProgress) {
       if (file.size > 1.5 * 1024 * 1024) throw new Error('في الوضع التجريبي الحد الأقصى للملف 1.5 ميجا.');
       return new Promise((res, rej) => {
         const r = new FileReader();
+        if (onProgress) r.onprogress = e => onProgress(e.loaded, e.total);
         r.onload = () => res(r.result);
         r.onerror = () => rej(new Error('تعذرت قراءة الملف.'));
         r.readAsDataURL(file);
@@ -170,11 +171,24 @@
       return { ...r.data, items };
     },
     async deletePost(id) { check(await sb().from('posts').delete().eq('id', id)); },
-    async upload(file, folder) {
+    // Uses XMLHttpRequest because it reports upload progress, which supabase-js doesn't.
+    async upload(file, folder, onProgress) {
       if (file.size > 50 * 1024 * 1024) throw new Error('الحد الأقصى لحجم الملف 50 ميجا.');
       const ext = (file.name.match(/\.[a-z0-9]{1,8}$/i) || [''])[0].toLowerCase();
       const path = `${folder}/${uid()}${ext}`;
-      check(await sb().storage.from('media').upload(path, file, { contentType: file.type || undefined }));
+      const { data } = await sb().auth.getSession();
+      await new Promise((res, rej) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', `${C.supabaseUrl.replace(/\/$/, '')}/storage/v1/object/media/${path}`);
+        xhr.setRequestHeader('apikey', C.supabaseAnonKey);
+        xhr.setRequestHeader('Authorization', `Bearer ${data.session ? data.session.access_token : ''}`);
+        xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+        xhr.setRequestHeader('cache-control', 'max-age=3600');
+        if (onProgress) xhr.upload.onprogress = e => { if (e.lengthComputable) onProgress(e.loaded, e.total); };
+        xhr.onload = () => (xhr.status >= 200 && xhr.status < 300 ? res() : rej(new Error('تعذر رفع الملف. حاول تاني.')));
+        xhr.onerror = () => rej(new Error('انقطع الاتصال أثناء رفع الملف. حاول تاني.'));
+        xhr.send(file);
+      });
       return sb().storage.from('media').getPublicUrl(path).data.publicUrl;
     },
   };

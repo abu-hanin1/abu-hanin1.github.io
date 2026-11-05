@@ -145,10 +145,70 @@
     render();
   }
 
+  // Downloads inside the page so the visitor sees exactly how far it got.
+  async function downloadFile(card, item) {
+    if (card.dataset.busy) return;
+    card.dataset.busy = '1';
+    const text = card.querySelector('[data-dl-text]');
+    const btn = card.querySelector('[data-dl-btn]');
+    const bar = card.querySelector('[data-dl-bar]');
+    const original = text.textContent;
+    const originalBtn = btn.innerHTML;
+    const show = (done, total) => {
+      const p = window.progressInfo('جاري التحميل', done, total);
+      text.textContent = p.text;
+      btn.textContent = p.pct === null ? `${(done / 1048576).toFixed(1)} ميجا` : `${p.pct}%`;
+      bar.firstElementChild.style.width = p.pct === null ? '100%' : `${p.pct}%`;
+      bar.classList.toggle('unknown', p.pct === null);
+    };
+    try {
+      if (item.value.startsWith('data:')) { card.removeAttribute('data-act'); card.click(); return; }
+      bar.hidden = false;
+      show(0, 0);
+      const res = await fetch(item.value);
+      if (!res.ok || !res.body) throw new Error('download');
+      const total = Number(res.headers.get('content-length')) || 0;
+      const reader = res.body.getReader();
+      const chunks = [];
+      let done = 0;
+      for (;;) {
+        const { done: finished, value } = await reader.read();
+        if (finished) break;
+        chunks.push(value);
+        done += value.length;
+        show(done, total);
+      }
+      const url = URL.createObjectURL(new Blob(chunks, { type: res.headers.get('content-type') || 'application/octet-stream' }));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = item.fileName || 'file';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+      text.textContent = 'تم التحميل! هتلاقي الملف في التنزيلات.';
+      btn.innerHTML = `${window.uiIcon('check', 18)} تم`;
+      setTimeout(() => { text.textContent = original; btn.innerHTML = originalBtn; bar.hidden = true; }, 5000);
+    } catch {
+      // Direct link as a fallback, so the visitor still gets the file.
+      text.textContent = original;
+      btn.innerHTML = originalBtn;
+      bar.hidden = true;
+      window.open(card.href, '_blank', 'noopener');
+    } finally {
+      delete card.dataset.busy;
+    }
+  }
+
   root.addEventListener('click', async e => {
     const b = e.target.closest('[data-act]');
     if (!b) return;
     const act = b.dataset.act, id = b.dataset.id;
+    if (act === 'download') {
+      e.preventDefault();
+      downloadFile(b, state.items.find(x => x.id === id));
+      return;
+    }
     if (act === 'open') openStep(id);
     else if (act === 'verify') verify(id);
     else if (act === 'unlock') unlock();

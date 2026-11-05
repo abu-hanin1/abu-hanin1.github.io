@@ -307,9 +307,26 @@
     if (el) el.textContent = linkFor(draft.slug);
   }
 
+  // ---------------------------------------------------------- upload progress
+  const uploads = {}; // 'cover' or an item id -> {done, total}
+
+  function barHtml(key) {
+    const u = uploads[key];
+    const p = window.progressInfo('جاري الرفع', u.done, u.total);
+    return `<div class="upbar" data-bar="${esc(key)}"><div class="upbar-top"><b>${p.pct === null ? '' : `${p.pct}%`}</b><span>${esc(p.text)}</span></div>
+      <i class="pbar"><i style="width:${p.pct || 0}%"></i></i></div>`;
+  }
+
+  function updateBar(key, done, total) {
+    uploads[key] = { done, total };
+    const el = document.querySelector(`[data-bar="${key}"]`);
+    if (el) el.outerHTML = barHtml(key);
+  }
+
   // ------------------------------------------------------------------ cover
   function renderCover() {
     const img = window.safeImg(draft.cover_url);
+    if (uploads.cover) { document.getElementById('cover').innerHTML = barHtml('cover'); return; }
     document.getElementById('cover').innerHTML = img
       ? `<div class="cover-box"><img src="${esc(img)}" alt="صورة البوست">
           <div class="cover-acts"><label class="btn sm">${ic('upload', 16)} تغيير<input type="file" accept="image/*" hidden data-cover-input></label>
@@ -320,13 +337,14 @@
 
   async function uploadCover(file) {
     if (!file || !file.type.startsWith('image/')) { toast('اختار ملف صورة', 'err'); return; }
-    const box = document.getElementById('cover');
-    box.classList.add('busy');
+    uploads.cover = { done: 0, total: file.size };
+    renderCover();
     try {
-      draft.cover_url = await DB.upload(file, 'covers');
-      touch(); renderCover();
+      draft.cover_url = await DB.upload(file, 'covers', (d, t) => updateBar('cover', d, t));
+      touch();
     } catch (e) { toast(e.message || 'تعذر رفع الصورة', 'err'); }
-    box.classList.remove('busy');
+    delete uploads.cover;
+    renderCover();
   }
 
   // ------------------------------------------------------------------ items
@@ -343,6 +361,8 @@
         field = `<input data-item="value" value="${esc(it.value || '')}" dir="ltr" placeholder="https://..." inputmode="url">`;
       } else if (it.type === 'text') {
         field = `<textarea data-item="value" rows="4" dir="auto" placeholder="اكتب البرومبت أو النص هنا">${esc(it.value || '')}</textarea>`;
+      } else if (uploads[it.id]) {
+        field = barHtml(it.id);
       } else {
         field = it.value
           ? `<div class="file-chosen">${ic('file', 18)}<span dir="auto">${esc(it.fileName || 'ملف')}</span>
@@ -502,13 +522,16 @@
         const row = el.closest('.sort-row');
         const it = draft.items.find(x => x.id === row.dataset.id);
         const file = el.files[0];
-        row.classList.add('busy');
+        uploads[it.id] = { done: 0, total: file.size };
+        renderItems();
         try {
-          it.value = await DB.upload(file, 'files');
+          it.value = await DB.upload(file, 'files', (d, t) => updateBar(it.id, d, t));
           it.fileName = file.name;
           if (!it.label) it.label = file.name.replace(/\.[^.]+$/, '');
-          touch(); renderItems();
-        } catch (err) { toast(err.message || 'تعذر رفع الملف', 'err'); row.classList.remove('busy'); }
+          touch();
+        } catch (err) { toast(err.message || 'تعذر رفع الملف', 'err'); }
+        delete uploads[it.id];
+        renderItems();
       }
     });
 
@@ -618,6 +641,7 @@
   }
 
   async function save() {
+    if (Object.keys(uploads).length) { toast('استنى لما رفع الملفات يخلص.', 'err'); return; }
     if (!validate()) return;
     const btn = document.getElementById('saveBtn');
     btn.disabled = true;

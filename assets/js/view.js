@@ -53,6 +53,14 @@
 
   window.fmtDate = d => new Date(d).toLocaleDateString('ar-EG-u-nu-latn', { day: 'numeric', month: 'long', year: 'numeric' });
 
+  const mb = n => (n / 1048576).toFixed(1);
+  // Text and percent for a progress bar. total can be 0 when the server doesn't report a size.
+  window.progressInfo = function (verb, done, total) {
+    if (!total) return { pct: null, text: `${verb}... ${mb(done)} ميجا` };
+    const pct = Math.min(100, Math.round((done / total) * 100));
+    return { pct, text: `${verb} ${pct}% (${mb(done)} من ${mb(total)} ميجا)` };
+  };
+
   window.toast = function (msg, kind) {
     let box = document.getElementById('toasts');
     if (!box) {
@@ -148,8 +156,9 @@
     if (!url) return '';
     if (it.type === 'file') {
       const href = url.includes('supabase.co/storage') ? `${url}?download=${encodeURIComponent(it.fileName || 'file')}` : url;
-      return `<a class="got got-link" href="${esc(href)}" download="${esc(it.fileName || '')}" target="_blank" rel="noopener">
-        ${ic('file', 20)}<span><b>${label}</b><small dir="auto">${esc(it.fileName || 'ملف')}</small></span><em>${ic('download', 18)} تحميل</em></a>`;
+      return `<a class="got got-link got-file" data-act="download" data-id="${esc(it.id)}" href="${esc(href)}" download="${esc(it.fileName || '')}" target="_blank" rel="noopener">
+        ${ic('file', 20)}<span><b>${label}</b><small dir="auto" data-dl-text>${esc(it.fileName || 'ملف')}</small></span><em data-dl-btn>${ic('download', 18)} تحميل</em>
+        <i class="pbar" data-dl-bar hidden><i></i></i></a>`;
     }
     return `<a class="got got-link" href="${esc(url)}" target="_blank" rel="noopener noreferrer">
       ${ic('link', 20)}<span><b>${label}</b></span><em>${ic('external', 18)} فتح</em></a>`;
