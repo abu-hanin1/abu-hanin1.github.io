@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>لوحة التحكم</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0d0f12">
+<link rel="icon" type="image/png" href="assets/app/icon-192.png">
+<link rel="apple-touch-icon" href="assets/app/icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="لوحة مفتاح">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800;900&display=swap">
 <link rel="stylesheet" href="assets/css/style.css">
@@ -13,7 +20,10 @@
 <div class="demo-bar" id="demoBar" hidden>وضع تجريبي: البيانات محفوظة في المتصفح ده بس. اربط Supabase علشان الموقع يشتغل للناس كلها.</div>
 <header class="topbar">
   <a class="logo" id="logo" href="#/"></a>
-  <button class="btn sm" id="logout" hidden></button>
+  <div class="head-acts">
+    <button class="btn sm primary" id="installBtn" hidden></button>
+    <button class="btn sm" id="logout" hidden></button>
+  </div>
 </header>
 <main class="wrap wide" id="app"><div class="loading"></div></main>
 <script src="assets/js/config.js"></script>
