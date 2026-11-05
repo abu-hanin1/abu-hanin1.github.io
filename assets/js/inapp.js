@@ -36,6 +36,7 @@
         <div class="inapp-ic">${ic('external', 32)}</div>
         <h1>افتح الرابط في Chrome</h1>
         <p class="muted">المتصفح اللي جوه التطبيق بيطلب تسجيل الدخول في يوتيوب. افتح الصفحة في Chrome علشان تشترك بحسابك بسهولة.</p>
+        ${platform === 'android' ? '<div class="inapp-tip">لو ظهرت رسالة <b>مغادرة التطبيق</b>، اضغط <b>متابعة</b>. دي رسالة عادية من التطبيق.</div>' : ''}
         <a class="btn primary wide" href="${esc(chrome)}">${ic('external', 20)} افتح في Chrome</a>
         ${platform === 'ios' ? `<a class="btn wide" href="${esc(InApp.safariUrl(href))}">افتح في Safari</a>` : ''}
         <div class="inapp-or"><b>الزر ما اشتغلش؟</b> ${menuHint}</div>
