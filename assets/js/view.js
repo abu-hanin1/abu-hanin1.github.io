@@ -195,7 +195,7 @@
       <div class="lk-side">
         ${opened ? `<div class="got-title">${ic('unlock', 22)} اتفتح! دي حاجتك</div>
           <div class="got-list">${s.items.map(itemHtml).join('') || '<p class="muted">لا يوجد محتوى بعد.</p>'}</div>`
-        : `${total ? `<div class="prog"><span>${steps.some(x => x.verify) ? 'الخطوات المطلوبة' : 'ادعمنا بالخطوات دي'}</span><b>${doneCount}/${total}</b>
+        : `${total ? `<div class="prog"><span>${steps.some(x => x.verify) ? 'الخطوات المطلوبة' : 'ادعمنا بخطوة بسيطة'}</span><b>${doneCount}/${total}</b>
             <i style="--p:${total ? (doneCount / total) * 100 : 0}%"></i></div>` : ''}
           <div class="steps">${steps.map(x => stepHtml(x, s)).join('')}</div>
           ${total && ready ? `<div class="all-done">${ic('check', 18)} كل الخطوات اكتملت</div>` : ''}
@@ -203,8 +203,8 @@
             ${ic(ready ? 'unlock' : 'lock', 24)}
             <span>${s.unlocking ? 'جاري الفتح...' : esc(theme.unlockLabel || 'افتح المحتوى')}</span>
           </button>
-          <p class="unlock-hint">${ready ? 'القفل اتفتح! اضغط علشان تحصل على المحتوى' : canSkip ? 'الخطوات دي اختيارية. ادعمنا بيها، أو تخطاها وافتح المحتوى.' : 'كمّل كل الخطوات اللي فوق الأول'}</p>
-          ${canSkip ? `<button class="skip-btn" data-act="skip" ${s.unlocking ? 'disabled' : ''}>تخطي وافتح المحتوى</button>` : ''}
+          <p class="unlock-hint">${ready ? 'القفل اتفتح! اضغط علشان تحصل على المحتوى' : canSkip ? 'فضلًا وليس أمرًا، دعمك بيساعدنا نكمل ونقدم لك محتوى مجاني.' : 'كمّل كل الخطوات اللي فوق الأول'}</p>
+          ${canSkip ? `<button class="skip-btn" data-act="skip" ${s.unlocking ? 'disabled' : ''}>${steps.some(x => /^yt_(subscribe|bell)$/.test(x.action)) ? 'أكمل بدون اشتراك' : 'أكمل بدون الخطوات'}</button>` : ''}
           <div class="how"><b>إزاي تفتح الرابط؟</b>
             <span>اضغط على الزر، نفّذ الخطوة، وارجع لنفس الصفحة هتلاقي القفل مفتوح. <strong>مجانًا</strong> وبدون أي تعقيد.</span></div>`}
       </div>
