@@ -45,7 +45,7 @@
   // ------------------------------------------------------------------ login
   function showLogin(note) {
     app.innerHTML = `<form class="card login" id="loginForm">
-      <div class="logo big">${ic('unlock', 34)}<span>${esc(C.siteName)}</span></div>
+      <div class="logo big"><i class="logo-mark" aria-hidden="true"></i><span>${esc(C.siteName)}</span></div>
       <h1>تسجيل دخول لوحة التحكم</h1>
       ${note ? `<p class="form-err" role="alert">${esc(note)}</p>` : ''}
       <label class="fld"><span>البريد الإلكتروني</span><input type="email" name="email" dir="ltr" required autocomplete="username"></label>
@@ -683,7 +683,7 @@
 
   // ------------------------------------------------------------------ start
   function renderTop(session) {
-    document.getElementById('logo').innerHTML = `${ic('unlock', 26)}<span>${esc(C.siteName)}</span>`;
+    document.getElementById('logo').innerHTML = `<i class="logo-mark" aria-hidden="true"></i><span>${esc(C.siteName)}</span>`;
     const out = document.getElementById('logout');
     out.hidden = DB.isDemo || !session;
     out.innerHTML = `${ic('logout', 18)} خروج`;

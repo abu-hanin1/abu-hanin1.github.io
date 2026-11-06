@@ -3,7 +3,6 @@
   window.PAGE_STARTED = true;
   const C = window.SITE_CONFIG;
   const root = document.getElementById('app');
-  document.getElementById('logo').innerHTML = `${window.uiIcon('unlock', 26)}<span>${window.esc(C.siteName)}</span>`;
   const slug = new URLSearchParams(location.search).get('s') || '';
   const PASS_KEY = 'miftah_pass';
   const doneKey = `miftah_done_${slug}`;
