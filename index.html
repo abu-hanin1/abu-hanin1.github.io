@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>أبو حنين القناص</title>
 <meta name="description" content="روابط وملفات وبرومبتات حصرية، افتحها بخطوة واحدة.">
+<link rel="icon" type="image/jpeg" href="assets/app/logo.jpg">
 <style>html { background: #0d0f12; color: #f6f8fa; }</style>
 <script>
   // The address bar shows the site name alone.
@@ -17,7 +18,7 @@
 </head>
 <body class="home">
 <header class="topbar">
-  <a class="logo" href="/" id="logo">أبو حنين القناص</a>
+  <a class="logo" href="/"><img class="logo-mark" src="assets/app/logo.jpg" alt=""><span>أبو حنين القناص</span></a>
 </header>
 <main class="wrap">
   <section class="hero">
@@ -33,7 +34,6 @@
 <script src="assets/js/data.js"></script>
 <script>
   document.title = SITE_CONFIG.siteName;
-  document.getElementById('logo').innerHTML = uiIcon('unlock', 26) + '<span>' + esc(SITE_CONFIG.siteName) + '</span>';
   document.getElementById('tagline').textContent = SITE_CONFIG.tagline;
 </script>
 <script src="assets/js/home.js"></script>
