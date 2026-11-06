@@ -15,14 +15,6 @@
     return;
   }
 
-  const sum = key => posts.reduce((n, p) => n + (Number(p[key]) || 0), 0);
-  const stats = document.getElementById('hero-stats');
-  stats.innerHTML = [
-    ['gift', posts.length, 'بوست'],
-    ['eye', sum('views'), 'مشاهدة'],
-    ['unlock', sum('unlocks'), 'مرة فتح'],
-  ].map(([icon, n, label]) => `<div class="hero-stat-item">${ic(icon, 20)}<b>${window.fmtNum(n)}</b><span>${label}</span></div>`).join('');
-  stats.hidden = false;
   document.getElementById('grid-head').hidden = false;
 
   grid.innerHTML = posts.map(p => {
