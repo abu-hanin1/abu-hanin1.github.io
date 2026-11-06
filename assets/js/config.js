@@ -13,3 +13,9 @@ window.SITE_CONFIG = {
   // Seconds a step stays on "جاري التحقق" after its button is pressed, then it completes.
   checkSeconds: 15,
 };
+
+// Outside GitHub Pages, visitors reach the database through the site's own address
+// (functions/sb), for networks that can't reach it directly.
+window.SITE_CONFIG.apiBase = /(^|\.)github\.io$|^localhost$|^127\./.test(location.hostname)
+  ? window.SITE_CONFIG.supabaseUrl
+  : `${location.origin}/sb`;

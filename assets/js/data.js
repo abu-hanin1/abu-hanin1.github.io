@@ -125,14 +125,15 @@
     const ctl = window.AbortController ? new AbortController() : null;
     const timer = ctl && setTimeout(() => ctl.abort(), 20000);
     try {
-      const res = await fetch(`${C.supabaseUrl.replace(/\/$/, '')}/rest/v1/rpc/${name}`, {
+      const res = await fetch(`${C.apiBase}/rest/v1/rpc/${name}`, {
         method: 'POST',
         headers: { apikey: C.supabaseAnonKey, 'Content-Type': 'application/json' },
         body: JSON.stringify(args || {}),
         signal: ctl ? ctl.signal : undefined,
       });
       if (!res.ok) throw new Error('rpc_failed');
-      return await res.json();
+      // Pictures and files follow the same route as the data.
+      return JSON.parse((await res.text()).split(C.supabaseUrl).join(C.apiBase));
     } finally {
       clearTimeout(timer);
     }

@@ -157,7 +157,7 @@
     const url = window.safeUrl(it.value);
     if (!url) return '';
     if (it.type === 'file') {
-      const href = url.includes('supabase.co/storage') ? `${url}?download=${encodeURIComponent(it.fileName || 'file')}` : url;
+      const href = url.includes('/storage/v1/object/') ? `${url}?download=${encodeURIComponent(it.fileName || 'file')}` : url;
       return `<a class="got got-link got-file" data-act="download" data-id="${esc(it.id)}" href="${esc(href)}" download="${esc(it.fileName || '')}" target="_blank" rel="noopener">
         <i class="got-ic">${ic('file', 24)}</i><span><b dir="auto">${label}</b><small dir="auto" data-dl-text>${esc(it.fileName || 'ملف')}</small></span><em data-dl-btn>${ic('download', 18)} تحميل</em>
         <i class="pbar" data-dl-bar hidden><i></i></i></a>`;

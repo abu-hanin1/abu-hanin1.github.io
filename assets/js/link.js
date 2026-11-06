@@ -14,7 +14,7 @@
 
   // The address bar keeps the short link, without the page's file name. Reloading it still
   // works, because 404.html brings it back here.
-  if (/\/link\.html$/.test(location.pathname) && /^[a-z0-9][a-z0-9-]{1,60}$/.test(slug)) {
+  if (/\/link(\.html)?$/.test(location.pathname) &&/^[a-z0-9][a-z0-9-]{1,60}$/.test(slug)) {
     const rest = new URLSearchParams(location.search);
     rest.delete('s');
     const qs = rest.toString();
