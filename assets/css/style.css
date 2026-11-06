@@ -206,10 +206,6 @@ body.link-page .lk-root { margin: 0 auto auto; padding-top: 0; }
   .lk-card .step-btn, .lk-card .unlock-btn { min-height: 64px; font-size: 19px; }
 }
 /* Any picture shape: shown whole at its own proportions, never cropped. */
-/* On a phone, what the visitor came for goes first, with no scrolling to reach it. */
-@container (max-width: 759px) {
-  .lk-card.side-first .lk-side { order: -1; }
-}
 @container (max-width: 520px) {
   .lk-card .ready-seal { width: 68px; height: 68px; }
   .lk-card .got-link, .lk-card .got-head { flex-wrap: wrap; }
