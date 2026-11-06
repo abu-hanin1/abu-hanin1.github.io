@@ -168,7 +168,11 @@ textarea { resize: vertical; display: block; }
 .pv-screen.bg-host { overflow: hidden; }
 .pv-screen.bg-host::before { position: absolute; }
 
-body.link-page { display: flex; align-items: flex-start; }
+body.link-page { display: flex; flex-direction: column; }
+.lk-brand { display: flex; justify-content: center; padding: clamp(14px, 3vw, 28px) 16px clamp(10px, 2vw, 16px); }
+.lk-brand .logo { text-align: center; transition: opacity .15s; }
+.lk-brand .logo:hover { opacity: .8; }
+body.link-page .lk-root { margin: 0 auto auto; padding-top: 0; }
 .lk-root { container-type: inline-size; width: 100%; max-width: 1280px; margin: auto; padding: clamp(14px, 4vw, 44px) clamp(12px, 3vw, 24px); }
 .lk-root > .empty-state { max-width: 520px; margin: 12vh auto; }
 .lk-card {
