@@ -12,6 +12,15 @@
   const inApp = window.InApp && !new URLSearchParams(location.search).has('nochrome')
     ? window.InApp.detect(navigator.userAgent) : null;
 
+  // The address bar keeps the short link, without the page's file name. Reloading it still
+  // works, because 404.html brings it back here.
+  if (/\/link\.html$/.test(location.pathname) && /^[a-z0-9][a-z0-9-]{1,60}$/.test(slug)) {
+    const rest = new URLSearchParams(location.search);
+    rest.delete('s');
+    const qs = rest.toString();
+    history.replaceState(null, '', `/${slug}${qs ? `?${qs}` : ''}`);
+  }
+
   let post = null;
   const state = { done: new Set(), clicked: new Set(), checking: new Set(), msg: {}, busy: null, items: null, unlocking: false };
   // stepId -> time its button was pressed. Saved because phones often reload
@@ -26,7 +35,14 @@
 
   const message = (title, text, retry) => {
     root.innerHTML = `<div class="empty-state card">${window.uiIcon('lock', 44)}<h1>${window.esc(title)}</h1><p>${window.esc(text)}</p>
-      ${retry ? '<a class="btn primary" href="">حاول تاني</a>' : '<a class="btn primary" href="index.html">الصفحة الرئيسية</a>'}</div>`;
+      ${retry ? '<a class="btn primary" href="">حاول تاني</a>' : '<a class="btn primary" href="/">الصفحة الرئيسية</a>'}</div>`;
+  };
+
+  // Counters work per visit: a new opening of the link counts again, but this tab reloading
+  // (phones often do that on the way back from YouTube) stays the same visit.
+  const visit = {
+    has(k) { try { return !!sessionStorage.getItem(k); } catch (e) { return false; } },
+    mark(k) { try { sessionStorage.setItem(k, '1'); } catch (e) {} },
   };
 
   const saveDone = () => {
@@ -126,8 +142,10 @@
     if (!finished) return;
     window.store.set(checkingKey, started);
     saveDone();
-    if (post.steps.every(s => state.done.has(s.id))) celebrate();
+    const allDone = post.steps.every(s => state.done.has(s.id));
+    if (allDone) celebrate();
     render();
+    if (allDone) window.scrollTo(0, 0);
   }
 
   function celebrate() {
@@ -145,10 +163,10 @@
   async function unlock() {
     state.unlocking = true; render();
     try {
-      const first = !window.store.get(openedKey, false);
+      const first = !visit.has(openedKey);
       const res = await window.DB.unlock(slug, { pass: window.store.get(PASS_KEY, null), count: first });
       if (res.ok) {
-        if (first) { post.unlocks = (post.unlocks || 0) + 1; window.store.set(openedKey, true); }
+        if (first) { post.unlocks = (post.unlocks || 0) + 1; visit.mark(openedKey); }
         state.items = res.items || [];
         celebrate();
       } else if (res.reason === 'expired') {
@@ -164,6 +182,7 @@
     }
     state.unlocking = false;
     render();
+    window.scrollTo(0, 0);
   }
 
   // Downloads inside the page so the visitor sees exactly how far it got.
@@ -250,18 +269,16 @@
     const params = new URLSearchParams(location.search);
     if (params.has('counted')) {
       // Arrived from Messenger, where this visit was already counted.
-      window.store.set(key, Date.now());
+      visit.mark(key);
       params.delete('counted');
       const qs = params.toString();
       history.replaceState(null, '', location.pathname + (qs ? `?${qs}` : ''));
       return;
     }
-    // One visit per device every 6 hours, so refreshing the page doesn't inflate the number.
-    const last = window.store.get(key, 0);
-    if (Date.now() - last < 6 * 3600 * 1000) return;
+    if (visit.has(key)) return;
     try {
       await window.DB.registerView(slug);
-      window.store.set(key, Date.now());
+      visit.mark(key);
       post.views = (post.views || 0) + 1;
     } catch (e) {}
   }

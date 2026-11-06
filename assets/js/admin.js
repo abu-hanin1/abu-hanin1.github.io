@@ -332,7 +332,7 @@
           <div class="cover-acts"><label class="btn sm">${ic('upload', 16)} تغيير<input type="file" accept="image/*" hidden data-cover-input></label>
           <button class="btn sm danger" data-cover-remove>${ic('trash', 16)} إزالة</button></div></div>`
       : `<label class="drop" data-drop><input type="file" accept="image/*" hidden data-cover-input>
-          ${ic('image', 30)}<b>ارفع صورة احترافية للبوست</b><small>اضغط أو اسحب الصورة هنا. المقاس الأنسب 1280×720</small></label>`;
+          ${ic('image', 30)}<b>ارفع صورة احترافية للبوست</b><small>اضغط أو اسحب الصورة هنا. أي مقاس ينفع، وهتظهر كاملة</small></label>`;
   }
 
   async function uploadCover(file) {

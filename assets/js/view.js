@@ -149,8 +149,9 @@
     const label = esc(it.label || (TYPE[it.type] && TYPE[it.type].one) || '');
     if (it.type === 'text') {
       return `<div class="got got-text">
-        <div class="got-head">${ic('text', 18)}<b>${label}</b>
-          <button class="btn sm" data-act="copy" data-id="${esc(it.id)}">${ic('copy', 16)} نسخ</button></div>
+        <div class="got-head"><i class="got-ic">${ic('text', 24)}</i>
+          <span><b dir="auto">${label}</b><small>انسخه واستخدمه مباشرة</small></span>
+          <button class="got-copy" data-act="copy" data-id="${esc(it.id)}">${ic('copy', 18)} نسخ</button></div>
         <pre dir="auto">${esc(it.value)}</pre></div>`;
     }
     const url = window.safeUrl(it.value);
@@ -158,11 +159,12 @@
     if (it.type === 'file') {
       const href = url.includes('supabase.co/storage') ? `${url}?download=${encodeURIComponent(it.fileName || 'file')}` : url;
       return `<a class="got got-link got-file" data-act="download" data-id="${esc(it.id)}" href="${esc(href)}" download="${esc(it.fileName || '')}" target="_blank" rel="noopener">
-        ${ic('file', 20)}<span><b>${label}</b><small dir="auto" data-dl-text>${esc(it.fileName || 'ملف')}</small></span><em data-dl-btn>${ic('download', 18)} تحميل</em>
+        <i class="got-ic">${ic('file', 24)}</i><span><b dir="auto">${label}</b><small dir="auto" data-dl-text>${esc(it.fileName || 'ملف')}</small></span><em data-dl-btn>${ic('download', 18)} تحميل</em>
         <i class="pbar" data-dl-bar hidden><i></i></i></a>`;
     }
+    const host = new URL(url).hostname.replace(/^www\./, '');
     return `<a class="got got-link" href="${esc(url)}" target="_blank" rel="noopener noreferrer">
-      ${ic('link', 20)}<span><b>${label}</b></span><em>${ic('external', 18)} فتح</em></a>`;
+      <i class="got-ic">${ic('link', 24)}</i><span><b dir="auto">${label}</b><small dir="ltr">${esc(host)}</small></span><em>${ic('external', 18)} فتح</em></a>`;
   }
 
   // state: {done:Set, clicked:Set, msg:{}, busy, items, unlocking, preview}
@@ -179,7 +181,7 @@
       theme.hideViews ? '' : `<span class="chip">${ic('eye', 15)}<b>${window.fmtNum(post.views)}</b> مشاهدة</span>`,
     ].join('');
     const opened = !!s.items;
-    const cardClass = ['lk-card', cover ? '' : 'no-cover', opened && s.items.some(i => i.type === 'text') ? 'has-text' : ''].join(' ').trim();
+    const cardClass = ['lk-card', cover ? '' : 'no-cover', opened && s.items.some(i => i.type === 'text') ? 'has-text' : '', opened || ready ? 'side-first' : ''].join(' ').trim();
     return `<article class="${cardClass}" style="--accent:${esc(theme.accent || '#10e08a')}">
       <div class="lk-info">
         ${cover ? `<img class="lk-cover" src="${esc(cover)}" alt="">` : ''}
@@ -191,18 +193,27 @@
         ${post.description ? `<p class="lk-desc" dir="auto">${esc(post.description)}</p>` : ''}
         ${opened ? '' : teaser(post.items_summary)}
       </div>
-      <div class="lk-side">
-        ${opened ? `<div class="got-title">${ic('unlock', 22)} اتفتح! دي حاجتك</div>
+      <div class="lk-side ${!opened && ready ? 'is-ready' : ''}">
+        ${opened ? `<div class="got-title"><span class="got-seal">${ic('check', 24)}</span>
+            <div><h2>تم فتح المحتوى</h2><p>كل حاجة جاهزة ليك هنا.</p></div></div>
           <div class="got-list">${s.items.map(itemHtml).join('') || '<p class="muted">لا يوجد محتوى بعد.</p>'}</div>`
-        : `${total ? `<div class="prog"><span>الخطوات المطلوبة</span><b>${doneCount}/${total}</b>
-            <i style="--p:${total ? (doneCount / total) * 100 : 0}%"></i></div>` : ''}
+        : ready ? `<div class="ready-panel ${s.unlocking ? '' : 'enter'}" role="status">
+            <span class="ready-seal">${ic('unlock', 40)}</span>
+            <h2>${total ? 'تم التحقق بنجاح' : 'المحتوى جاهز'}</h2>
+            <p>${total ? 'كده كل حاجة تمام، المحتوى جاهز ليك.' : 'اضغط على الزر علشان تحصل عليه.'}</p>
+            <button class="unlock-btn ready" data-act="unlock" ${s.unlocking ? 'disabled' : ''}>
+              ${s.unlocking ? '<span class="spinner" aria-hidden="true"></span>' : ic('unlock', 24)}
+              <span>${s.unlocking ? 'جاري الفتح...' : esc(theme.unlockLabel || 'افتح المحتوى')}</span>
+            </button>
+          </div>`
+        : `<div class="prog"><span>الخطوات المطلوبة</span><b>${doneCount}/${total}</b>
+            <i style="--p:${(doneCount / total) * 100}%"></i></div>
           <div class="steps">${steps.map(x => stepHtml(x, s)).join('')}</div>
-          ${total && ready ? `<div class="all-done">${ic('check', 18)} كل الخطوات اكتملت</div>` : ''}
-          <button class="unlock-btn ${ready ? 'ready' : ''}" data-act="unlock" ${ready && !s.unlocking ? '' : 'disabled'}>
-            ${ic(ready ? 'unlock' : 'lock', 24)}
-            <span>${s.unlocking ? 'جاري الفتح...' : esc(theme.unlockLabel || 'افتح المحتوى')}</span>
+          <button class="unlock-btn" data-act="unlock" disabled>
+            ${ic('lock', 24)}
+            <span>${esc(theme.unlockLabel || 'افتح المحتوى')}</span>
           </button>
-          <p class="unlock-hint">${ready ? 'القفل اتفتح! اضغط علشان تحصل على المحتوى' : 'كمّل كل الخطوات اللي فوق الأول'}</p>
+          <p class="unlock-hint">كمّل كل الخطوات اللي فوق الأول</p>
           <div class="how"><b>إزاي تفتح الرابط؟</b>
             <span>اضغط على الزر، نفّذ الخطوة، وارجع لنفس الصفحة هتلاقي القفل مفتوح. <strong>مجانًا</strong> وبدون أي تعقيد.</span></div>`}
       </div>
