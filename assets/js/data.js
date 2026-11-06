@@ -5,9 +5,9 @@
 
   // ---------------------------------------------------------------- helpers
   const store = {
-    get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
-    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; } },
-    del(k) { try { localStorage.removeItem(k); } catch {} },
+    get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } },
+    del(k) { try { localStorage.removeItem(k); } catch (e) {} },
   };
   window.store = store;
 
@@ -119,26 +119,38 @@
   };
 
   // --------------------------------------------------------------- supabase
-  async function rpc(name, args) {
-    const res = await fetch(`${C.supabaseUrl.replace(/\/$/, '')}/rest/v1/rpc/${name}`, {
-      method: 'POST',
-      headers: { apikey: C.supabaseAnonKey, 'Content-Type': 'application/json' },
-      body: JSON.stringify(args || {}),
-    });
-    if (!res.ok) throw new Error('rpc_failed');
-    return res.json();
+  // Every request has a time limit, so a stalled connection ends in a message
+  // instead of a page that keeps loading forever.
+  async function rpcOnce(name, args) {
+    const ctl = window.AbortController ? new AbortController() : null;
+    const timer = ctl && setTimeout(() => ctl.abort(), 20000);
+    try {
+      const res = await fetch(`${C.supabaseUrl.replace(/\/$/, '')}/rest/v1/rpc/${name}`, {
+        method: 'POST',
+        headers: { apikey: C.supabaseAnonKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify(args || {}),
+        signal: ctl ? ctl.signal : undefined,
+      });
+      if (!res.ok) throw new Error('rpc_failed');
+      return await res.json();
+    } finally {
+      clearTimeout(timer);
+    }
   }
+
+  // Only for reads: repeating a write could count a view or an unlock twice.
+  const rpcRead = (name, args) => rpcOnce(name, args).catch(() => rpcOnce(name, args));
 
   let client;
   const sb = () => client || (client = window.supabase.createClient(C.supabaseUrl, C.supabaseAnonKey));
   const check = r => { if (r.error) throw r.error; return r.data; };
 
   const live = {
-    listPublic: () => rpc('list_public_posts'),
-    getPost: slug => rpc('get_post', { p_slug: slug }),
-    registerView: slug => rpc('register_view', { p_slug: slug }),
+    listPublic: () => rpcRead('list_public_posts'),
+    getPost: slug => rpcRead('get_post', { p_slug: slug }),
+    registerView: slug => rpcOnce('register_view', { p_slug: slug }),
     unlock: (slug, { token = null, pass = null, count = false } = {}) =>
-      rpc('unlock_post', { p_slug: slug, p_google_token: token, p_pass: pass, p_count: count }),
+      rpcOnce('unlock_post', { p_slug: slug, p_google_token: token, p_pass: pass, p_count: count }),
 
     async session() {
       const { data } = await sb().auth.getSession();

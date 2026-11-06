@@ -1,7 +1,9 @@
 // Visitor page: walks through the steps, verifies, and reveals the locked content.
 (function () {
+  window.PAGE_STARTED = true;
   const C = window.SITE_CONFIG;
   const root = document.getElementById('app');
+  document.getElementById('logo').innerHTML = `${window.uiIcon('unlock', 26)}<span>${window.esc(C.siteName)}</span>`;
   const slug = new URLSearchParams(location.search).get('s') || '';
   const PASS_KEY = 'miftah_pass';
   const doneKey = `miftah_done_${slug}`;
@@ -22,9 +24,9 @@
     document.body.style.cssText = window.bgStyle(post);
   };
 
-  const message = (title, text) => {
+  const message = (title, text, retry) => {
     root.innerHTML = `<div class="empty-state card">${window.uiIcon('lock', 44)}<h1>${window.esc(title)}</h1><p>${window.esc(text)}</p>
-      <a class="btn primary" href="index.html">الصفحة الرئيسية</a></div>`;
+      ${retry ? '<a class="btn primary" href="">حاول تاني</a>' : '<a class="btn primary" href="index.html">الصفحة الرئيسية</a>'}</div>`;
   };
 
   const saveDone = () => {
@@ -34,7 +36,7 @@
   };
 
   async function loadGis() {
-    if (window.google?.accounts?.oauth2) return;
+    if (window.google && window.google.accounts && window.google.accounts.oauth2) return;
     await new Promise((res, rej) => {
       const s = document.createElement('script');
       s.src = 'https://accounts.google.com/gsi/client';
@@ -94,7 +96,7 @@
     const url = window.safeUrl(window.stepUrl(step));
     if (!url || state.checking.has(id) || (!step.verify && state.done.has(id))) return;
     // Inside Messenger on Android, YouTube would ask for a login, so offer Chrome again.
-    if (inApp === 'android') { window.InApp.open(inApp); return; }
+    if (inApp) { window.InApp.open(); return; }
     window.open(url, '_blank', 'noopener');
     state.clicked.add(id);
     if (!step.verify) {
@@ -131,7 +133,7 @@
   function celebrate() {
     const box = document.createElement('div');
     box.className = 'burst'; box.setAttribute('aria-hidden', 'true');
-    const accent = post.theme?.accent || '#10e08a';
+    const accent = (post.theme && post.theme.accent) || '#10e08a';
     box.innerHTML = Array.from({ length: 36 }, (_, i) => {
       const a = (i / 36) * 360, d = 90 + (i * 37) % 170;
       return `<i style="--a:${a}deg;--d:${d}px;--c:${i % 3 ? accent : '#fff'}"></i>`;
@@ -157,7 +159,7 @@
           state.msg[id] = { kind: 'err', text: 'لازم نتأكد من اشتراكك الأول.' };
         });
       }
-    } catch {
+    } catch (e) {
       window.toast('حصلت مشكلة في الاتصال. حاول تاني.', 'err');
     }
     state.unlocking = false;
@@ -208,7 +210,7 @@
       text.textContent = 'تم التحميل! هتلاقي الملف في التنزيلات.';
       btn.innerHTML = `${window.uiIcon('check', 18)} تم`;
       setTimeout(() => { text.textContent = original; btn.innerHTML = originalBtn; bar.hidden = true; }, 5000);
-    } catch {
+    } catch (e) {
       // Direct link as a fallback, so the visitor still gets the file.
       text.textContent = original;
       btn.innerHTML = originalBtn;
@@ -238,7 +240,7 @@
     } else if (act === 'share') {
       const shortUrl = new URL(encodeURIComponent(slug), new URL('./', location.href)).href;
       const data = { title: post.title, url: shortUrl };
-      if (navigator.share) { try { await navigator.share(data); } catch {} }
+      if (navigator.share) { try { await navigator.share(data); } catch (e) {} }
       else { await window.copyText(shortUrl); window.toast('تم نسخ الرابط!', 'ok'); }
     }
   });
@@ -261,13 +263,13 @@
       await window.DB.registerView(slug);
       window.store.set(key, Date.now());
       post.views = (post.views || 0) + 1;
-    } catch {}
+    } catch (e) {}
   }
 
   async function init() {
     if (!slug) return message('الرابط غير صحيح', 'تأكد من الرابط وحاول تاني.');
     try { post = await window.DB.getPost(slug); }
-    catch { return message('تعذر تحميل الصفحة', 'تأكد من اتصالك بالإنترنت وحاول تاني.'); }
+    catch (e) { return message('تعذر الاتصال بالموقع', 'تأكد من الإنترنت وحاول تاني.', true); }
     if (!post) return message('الرابط غير موجود', 'يمكن يكون اتمسح أو الرابط فيه خطأ.');
     if (post.expired) return message('انتهت صلاحية الرابط', 'الرابط ده مبقاش متاح.');
 
@@ -288,17 +290,22 @@
     window.addEventListener('focus', scheduleChecks);
     window.addEventListener('pageshow', scheduleChecks);
 
-    await countView();
+    // The post appears right away. On a slow connection, the requests below finish behind it.
+    render();
+    scheduleChecks();
 
     // Someone already verified before: the lock opens with no extra steps.
     const pass = window.store.get(PASS_KEY, null);
     if (pass && post.steps.some(s => s.verify)) {
-      try { applyVerified(await window.DB.unlock(slug, { pass })); } catch {}
+      try { applyVerified(await window.DB.unlock(slug, { pass })); render(); } catch (e) {}
     }
-    render();
-    scheduleChecks();
+
+    const viewsBefore = post.views;
+    await countView();
+    // Not once the content is open: redrawing would cancel a download in progress.
+    if (post.views !== viewsBefore && !state.items && !state.unlocking) render();
   }
 
   // Waits for the post first: leaving for Chrome can cancel requests still loading.
-  init().finally(() => { if (inApp) window.InApp.autoOpen(inApp); });
+  init().finally(() => { if (inApp) window.InApp.autoOpen(); });
 })();

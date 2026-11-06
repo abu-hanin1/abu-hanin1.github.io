@@ -1,10 +1,14 @@
 // Public home page: gallery of the links marked "public".
 (async function () {
+  window.PAGE_STARTED = true;
   const grid = document.getElementById('grid');
   const ic = window.uiIcon;
   let posts = [];
   try { posts = await window.DB.listPublic(); }
-  catch { grid.innerHTML = '<p class="muted center">تعذر تحميل المحتوى. حاول تاني.</p>'; return; }
+  catch (e) {
+    grid.innerHTML = '<div class="empty-state"><h2>تعذر الاتصال بالموقع</h2><p>تأكد من الإنترنت وحاول تاني.</p><a class="btn primary" href="">حاول تاني</a></div>';
+    return;
+  }
   if (!posts.length) {
     grid.innerHTML = `<div class="empty-state">${ic('gift', 44)}<h2>المحتوى قادم قريبًا</h2></div>`;
     return;

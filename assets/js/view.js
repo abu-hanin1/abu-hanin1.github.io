@@ -76,11 +76,11 @@
   };
 
   window.copyText = async function (text) {
-    try { await navigator.clipboard.writeText(text); return true; } catch {}
+    try { await navigator.clipboard.writeText(text); return true; } catch (e) {}
     const ta = document.createElement('textarea');
     ta.value = text; ta.style.cssText = 'position:fixed;opacity:0';
     document.body.appendChild(ta); ta.select();
-    let ok = false; try { ok = document.execCommand('copy'); } catch {}
+    let ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
     ta.remove();
     return ok;
   };
@@ -146,7 +146,7 @@
   }
 
   function itemHtml(it) {
-    const label = esc(it.label || TYPE[it.type]?.one || '');
+    const label = esc(it.label || (TYPE[it.type] && TYPE[it.type].one) || '');
     if (it.type === 'text') {
       return `<div class="got got-text">
         <div class="got-head">${ic('text', 18)}<b>${label}</b>
