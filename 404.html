@@ -14,7 +14,7 @@
   // /my-link opens the post page for my-link.
   (function () {
     var m = location.pathname.match(/^\/([a-z0-9][a-z0-9-]{1,60})\/?$/i);
-    if (m) location.replace('/link.html?s=' + encodeURIComponent(m[1].toLowerCase()));
+    if (m) location.replace('/link.html?s=' + encodeURIComponent(m[1].toLowerCase()) + location.search.replace(/^\?/, '&'));
   })();
 </script>
 </head>

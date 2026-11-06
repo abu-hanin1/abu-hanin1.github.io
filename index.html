@@ -6,6 +6,10 @@
 <title>أبو حنين القناص</title>
 <meta name="description" content="روابط وملفات وبرومبتات حصرية، افتحها بخطوة واحدة.">
 <style>html { background: #0d0f12; color: #f6f8fa; }</style>
+<script>
+  // The address bar shows the site name alone.
+  if (/\/index\.html$/.test(location.pathname)) history.replaceState(null, '', '/' + location.search + location.hash);
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <!-- Loaded without blocking: where Google is slow or blocked, the page still appears right away. -->
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800;900&display=swap" media="print" onload="this.media='all'">
@@ -13,15 +17,18 @@
 </head>
 <body class="home">
 <header class="topbar">
-  <a class="logo" href="index.html" id="logo">أبو حنين القناص</a>
+  <a class="logo" href="/" id="logo">أبو حنين القناص</a>
 </header>
 <main class="wrap">
   <section class="hero">
     <h1 id="tagline">كل المحتوى الحصري في مكان واحد</h1>
-    <p>روابط وملفات وبرومبتات حصرية. نفّذ الخطوة المطلوبة، ارجع لنفس الصفحة، والقفل هيتفتح لك.</p>
+    <p>كتب وروابط وبرومبتات جاهزة. نفّذ الخطوة المطلوبة، ارجع لنفس الصفحة، والقفل هيتفتح لك.</p>
+    <div class="hero-stats" id="hero-stats" hidden></div>
   </section>
+  <h2 class="grid-head" id="grid-head" hidden>أحدث المحتوى</h2>
   <section id="grid" class="post-grid" aria-live="polite"><div class="loading" aria-label="جاري التحميل"></div></section>
 </main>
+<footer class="site-foot">أبو حنين القناص</footer>
 <script src="assets/js/config.js"></script>
 <script src="assets/js/actions.js"></script>
 <script src="assets/js/view.js"></script>
