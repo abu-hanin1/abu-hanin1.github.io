@@ -157,11 +157,6 @@ body.home .wrap { width: 100%; max-width: 1240px; margin: 0 auto; padding: 0 20p
 .hero { padding: clamp(40px, 7vw, 76px) 0 clamp(32px, 5vw, 52px); text-align: center; }
 .hero h1 { max-width: 860px; margin: auto; font-size: clamp(32px, 6vw, 60px); line-height: 1.22; text-wrap: balance; }
 .hero p { max-width: 640px; margin: 16px auto 0; color: #c3cad3; font-size: clamp(17px, 2.2vw, 20px); }
-.hero-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 170px)); justify-content: center; gap: 12px; margin-top: 30px; }
-.hero-stat-item { display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 14px 8px; background: rgba(255, 255, 255, .045); border: 1px solid rgba(255, 255, 255, .1); border-radius: 16px; }
-.hero-stat-item .ic { color: var(--accent); }
-.hero-stat-item b { font-size: clamp(22px, 3.4vw, 30px); font-weight: 900; line-height: 1.35; }
-.hero-stat-item span { color: var(--muted); font-size: 14px; }
 .grid-head { margin-bottom: 18px; font-size: clamp(22px, 3vw, 28px); }
 .post-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); gap: 22px; }
 .post-grid > .empty-state, .post-grid > p, .post-grid > .loading { grid-column: 1 / -1; }
