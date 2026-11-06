@@ -3,22 +3,24 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>مفتاح</title>
+<title>أبو حنين القناص</title>
 <meta name="description" content="روابط وملفات وبرومبتات حصرية، افتحها بخطوة واحدة.">
+<style>html { background: #0d0f12; color: #f6f8fa; }</style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800;900&display=swap">
+<!-- Loaded without blocking: where Google is slow or blocked, the page still appears right away. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800;900&display=swap" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body class="home">
 <header class="topbar">
-  <a class="logo" href="index.html" id="logo"></a>
+  <a class="logo" href="index.html" id="logo">أبو حنين القناص</a>
 </header>
 <main class="wrap">
   <section class="hero">
-    <h1 id="tagline"></h1>
+    <h1 id="tagline">كل المحتوى الحصري في مكان واحد</h1>
     <p>روابط وملفات وبرومبتات حصرية. نفّذ الخطوة المطلوبة، ارجع لنفس الصفحة، والقفل هيتفتح لك.</p>
   </section>
-  <section id="grid" class="post-grid" aria-live="polite"></section>
+  <section id="grid" class="post-grid" aria-live="polite"><div class="loading" aria-label="جاري التحميل"></div></section>
 </main>
 <script src="assets/js/config.js"></script>
 <script src="assets/js/actions.js"></script>
@@ -30,5 +32,11 @@
   document.getElementById('tagline').textContent = SITE_CONFIG.tagline;
 </script>
 <script src="assets/js/home.js"></script>
+<script>
+  // Plain old JavaScript on purpose: it has to run even where the files above failed.
+  if (!window.PAGE_STARTED) {
+    document.getElementById('grid').innerHTML = '<div class="empty-state"><h2>تعذر تحميل المحتوى</h2><p>الإنترنت ضعيف أو المتصفح قديم. حاول تاني، أو افتح الموقع في متصفح Chrome.</p><a class="btn primary" href="">حاول تاني</a></div>';
+  }
+</script>
 </body>
 </html>
