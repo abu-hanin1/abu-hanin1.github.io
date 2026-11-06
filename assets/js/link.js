@@ -38,17 +38,20 @@
       ${retry ? '<a class="btn primary" href="">حاول تاني</a>' : '<a class="btn primary" href="/">الصفحة الرئيسية</a>'}</div>`;
   };
 
-  // Counters work per visit: a new opening of the link counts again, but this tab reloading
-  // (phones often do that on the way back from YouTube) stays the same visit.
+  // Everything about a visit lives as long as its tab. Closing the tab and opening the link
+  // again starts over: steps from the beginning, and the counters count again. This tab
+  // reloading (phones often do that on the way back from YouTube) stays the same visit.
   const visit = {
     has(k) { try { return !!sessionStorage.getItem(k); } catch (e) { return false; } },
     mark(k) { try { sessionStorage.setItem(k, '1'); } catch (e) {} },
+    get(k, d) { try { const v = sessionStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set(k, v) { try { sessionStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
   };
 
   const saveDone = () => {
     // Verified steps are re-confirmed by the server, so only click steps are remembered here.
     const ids = post.steps.filter(s => !s.verify && state.done.has(s.id)).map(s => s.id);
-    window.store.set(doneKey, ids);
+    visit.set(doneKey, ids);
   };
 
   async function loadGis() {
@@ -117,7 +120,7 @@
     state.clicked.add(id);
     if (!step.verify) {
       started[id] = Date.now();
-      window.store.set(checkingKey, started);
+      visit.set(checkingKey, started);
       state.checking.add(id);
       scheduleChecks();
     }
@@ -140,12 +143,11 @@
       finished = true;
     });
     if (!finished) return;
-    window.store.set(checkingKey, started);
+    visit.set(checkingKey, started);
     saveDone();
     const allDone = post.steps.every(s => state.done.has(s.id));
     if (allDone) celebrate();
     render();
-    if (allDone) window.scrollTo(0, 0);
   }
 
   function celebrate() {
@@ -182,7 +184,6 @@
     }
     state.unlocking = false;
     render();
-    window.scrollTo(0, 0);
   }
 
   // Downloads inside the page so the visitor sees exactly how far it got.
@@ -292,11 +293,11 @@
 
     document.title = `${post.title} | ${C.siteName}`;
     post.steps = post.steps || [];
-    window.store.get(doneKey, []).forEach(id => {
+    visit.get(doneKey, []).forEach(id => {
       if (post.steps.some(s => s.id === id && !s.verify)) state.done.add(id);
     });
 
-    const saved = window.store.get(checkingKey, {});
+    const saved = visit.get(checkingKey, {});
     Object.keys(saved).forEach(id => {
       if (post.steps.some(s => s.id === id && !s.verify) && !state.done.has(id)) {
         started[id] = saved[id];

@@ -181,7 +181,7 @@
       theme.hideViews ? '' : `<span class="chip">${ic('eye', 15)}<b>${window.fmtNum(post.views)}</b> مشاهدة</span>`,
     ].join('');
     const opened = !!s.items;
-    const cardClass = ['lk-card', cover ? '' : 'no-cover', opened && s.items.some(i => i.type === 'text') ? 'has-text' : '', opened || ready ? 'side-first' : ''].join(' ').trim();
+    const cardClass = ['lk-card', cover ? '' : 'no-cover', opened && s.items.some(i => i.type === 'text') ? 'has-text' : ''].join(' ').trim();
     return `<article class="${cardClass}" style="--accent:${esc(theme.accent || '#10e08a')}">
       <div class="lk-info">
         ${cover ? `<img class="lk-cover" src="${esc(cover)}" alt="">` : ''}
