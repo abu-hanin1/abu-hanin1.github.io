@@ -3,39 +3,33 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex">
-<title>جاري التحويل</title>
-<style>
-  body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #0d0f12; color: #f6f8fa; font: 700 18px/1.6 'Segoe UI', Tahoma, sans-serif; text-align: center; }
-  a { color: #10e08a; }
-</style>
-<script>
-  // GitHub Pages serves this page for unknown paths, which is what makes short links work:
-  // /my-link opens the post page for my-link.
-  (function () {
-    var m = location.pathname.match(/^\/([a-z0-9][a-z0-9-]{1,60})\/?$/i);
-    if (!m) return;
-    var go = function () {
-      location.replace('/link.html?s=' + encodeURIComponent(m[1].toLowerCase()) + location.search.replace(/^\?/, '&'));
-    };
-    // Inside Messenger or Facebook on Android, Chrome is tried first, before anything loads.
-    // Same list as assets/js/inapp.js. If the jump doesn't happen, the page opens here as usual.
-    var ua = navigator.userAgent;
-    var inApp = /FBAN|FBAV|FB_IAB|FBIOS|FB4A|FBLITE|Orca|Messenger|Instagram/i.test(ua) && /android/i.test(ua) && !/[?&]nochrome=/.test(location.search);
-    var tried = true;
-    try {
-      tried = !!sessionStorage.getItem('miftah_tried_chrome');
-      if (inApp) sessionStorage.setItem('miftah_tried_chrome', '1');
-    } catch (e) {}
-    if (!inApp || tried) return go();
-    var fallback = location.href + (location.search ? '&' : '?') + 'nochrome=1';
-    location.href = 'intent://' + location.host + location.pathname + location.search +
-      '#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=' + encodeURIComponent(fallback) + ';end';
-    setTimeout(go, 1200);
-  })();
-</script>
+<title>أبو حنين القناص</title>
+<!-- 404.html is an exact copy of this page: it is what short links like /abc12 open, with no
+     redirect in between. Paths start with / because the page can open at any address.
+     Change one, change both. -->
+<link rel="icon" type="image/jpeg" href="/assets/app/logo.jpg">
+<style>html { background: #0d0f12; color: #f6f8fa; }</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<!-- Loaded without blocking: where Google is slow or blocked, the page still appears right away. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800;900&display=swap" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="/assets/css/style.css">
 </head>
-<body>
-<p>الصفحة غير موجودة.<br><a href="/">الصفحة الرئيسية</a></p>
+<body class="link-page bg-host">
+<header class="lk-brand"><a class="logo" href="/"><img class="logo-mark" src="/assets/app/logo.jpg" alt=""><span>أبو حنين القناص</span></a></header>
+<main class="lk-root" id="app"><div class="loading" aria-label="جاري التحميل"></div></main>
+<noscript><p style="text-align:center;padding:24px">افتح الرابط في متصفح Chrome أو Safari علشان يشتغل.</p></noscript>
+<script src="/assets/js/config.js"></script>
+<script src="/assets/js/actions.js"></script>
+<script src="/assets/js/article.js"></script>
+<script src="/assets/js/view.js"></script>
+<script src="/assets/js/data.js"></script>
+<script src="/assets/js/inapp.js"></script>
+<script src="/assets/js/link.js"></script>
+<script>
+  // Plain old JavaScript on purpose: it has to run even where the files above failed.
+  if (!window.PAGE_STARTED) {
+    document.getElementById('app').innerHTML = '<div class="empty-state card"><h1>تعذر تحميل الصفحة</h1><p>الإنترنت ضعيف أو المتصفح قديم. حاول تاني، أو افتح الرابط في متصفح Chrome.</p><a class="btn primary" href="">حاول تاني</a></div>';
+  }
+</script>
 </body>
 </html>
