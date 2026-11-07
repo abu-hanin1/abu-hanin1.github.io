@@ -61,7 +61,24 @@
       <button type="button" class="art-copy" ${copyAttrs(value)}>${icon('copy', 18)}<span>نسخ</span></button></div>`;
   }
 
-  const stripMarks = s => s.replace(/^\*\*(.+)\*\*$/, '$1').replace(/[:：]\s*$/, '').trim();
+  function imageOf(line) {
+    const m = line.match(/^!\[([^\]]*)\]\((https?:\/\/[^)\s]+)\)$/);
+    if (m) return { src: m[2], cap: m[1].trim() };
+    return IMAGE_URL.test(line) ? { src: line, cap: '' } : null;
+  }
+
+  function slider(images) {
+    const slides = images.map(im => `<figure class="art-slide"><img src="${esc(im.src)}" alt="${esc(im.cap)}" loading="lazy" draggable="false">${im.cap ? `<figcaption dir="auto">${esc(im.cap)}</figcaption>` : ''}</figure>`).join('');
+    return `<div class="art-slider" data-slider>
+      <div class="art-slider-top"><b data-slide-count>الخطوة 1 من ${images.length}</b><small>اسحب للخطوة التالية</small></div>
+      <div class="art-track" data-slide-track tabindex="0">${slides}</div>
+      <div class="art-slider-nav">
+        <button type="button" data-slide="prev" disabled aria-label="الخطوة السابقة"><i>›</i><span>السابقة</span></button>
+        <button type="button" data-slide="next" aria-label="الخطوة التالية"><span>التالية</span><i>‹</i></button>
+      </div></div>`;
+  }
+
+  const stripMarks = s =>s.replace(/^\*\*(.+)\*\*$/, '$1').replace(/[:：]\s*$/, '').trim();
 
   // Returns { title, html }. The first line becomes the title when it reads like one,
   // unless the article already has its own title (label).
@@ -104,11 +121,20 @@
         continue;
       }
 
-      const img = raw.match(/^!\[([^\]]*)\]\((https?:\/\/[^)\s]+)\)$/);
-      if (img || IMAGE_URL.test(raw)) {
-        const src = img ? img[2] : raw;
-        const cap = img ? img[1] : '';
-        put(`<figure><img src="${esc(src)}" alt="${esc(cap)}" loading="lazy">${cap ? `<figcaption dir="auto">${esc(cap)}</figcaption>` : ''}</figure>`);
+      const img = imageOf(raw);
+      if (img) {
+        // Pictures one after the other become steps that slide sideways.
+        const group = [img];
+        for (let j = i + 1; j < lines.length; j++) {
+          const cur = lines[j].trim();
+          if (!cur) continue;
+          const nextImg = imageOf(cur);
+          if (!nextImg) break;
+          group.push(nextImg);
+          i = j;
+        }
+        if (group.length > 1) put(slider(group));
+        else put(`<figure><img src="${esc(img.src)}" alt="${esc(img.cap)}" loading="lazy">${img.cap ? `<figcaption dir="auto">${esc(img.cap)}</figcaption>` : ''}</figure>`);
         continue;
       }
 
@@ -225,7 +251,38 @@
     return walk(doc.body).replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
   }
 
+  // Arrows and the step counter. Listens on the whole page, so it keeps working when the
+  // article is redrawn, in the visitor page and in the editor's preview alike.
+  function bindSliders() {
+    const position = track => {
+      const width = track.clientWidth || 1;
+      return Math.round(Math.abs(track.scrollLeft) / width);
+    };
+    const refresh = track => {
+      const box = track.closest('[data-slider]');
+      const total = track.children.length;
+      const at = Math.min(position(track), total - 1);
+      box.querySelector('[data-slide-count]').textContent = `الخطوة ${at + 1} من ${total}`;
+      box.querySelector('[data-slide="prev"]').disabled = at === 0;
+      box.querySelector('[data-slide="next"]').disabled = at === total - 1;
+    };
+    document.addEventListener('click', e => {
+      const nav = e.target.closest && e.target.closest('[data-slide]');
+      if (!nav) return;
+      const track = nav.closest('[data-slider]').querySelector('[data-slide-track]');
+      const forward = nav.dataset.slide === 'next' ? 1 : -1;
+      // The page reads right to left, so moving forward means scrolling toward the left.
+      const side = getComputedStyle(track).direction === 'rtl' ? -1 : 1;
+      track.scrollBy({ left: forward * side * track.clientWidth, behavior: 'smooth' });
+    });
+    document.addEventListener('scroll', e => {
+      const track = e.target;
+      if (track && track.matches && track.matches('[data-slide-track]')) refresh(track);
+    }, true);
+  }
+
   const Article = { parse, fromHtml, DEFAULT_LABEL };
+  if (typeof document !== 'undefined') bindSliders();
   if (typeof window !== 'undefined') window.Article = Article;
   if (typeof module !== 'undefined') module.exports = Article;
 })();

@@ -368,8 +368,9 @@
         ${tool('file', 'file', 'زر ملف')}
         ${tool('quote', 'text', 'اقتباس')}
         <label class="art-tool-img">${ic('image', 16)} صورة<input type="file" accept="image/*" hidden data-art-image></label>
+        <label class="art-tool-img">${ic('image', 16)} صور خطوات<input type="file" accept="image/*" multiple hidden data-art-image></label>
       </div>
-      <p class="art-tip">الصق المقالة وهتتنسق لوحدها. ولو عايز تحدد حاجة بنفسك: ظلّل الرمز أو الرابط أو العنوان، واضغط الزر المناسب.</p>
+      <p class="art-tip">الصق المقالة وهتتنسق لوحدها. ولو عايز تحدد حاجة بنفسك: ظلّل الرمز أو الرابط أو العنوان، واضغط الزر المناسب. وصور الخطوات: اختار كذا صورة مرة واحدة وهتتقلب يمين وشمال بترتيب أسماء الملفات. ولشرح أي صورة، اكتب الشرح بين القوسين [ ] في سطرها.</p>
       <textarea class="art-text" data-item="value" data-art-text rows="14" dir="auto" placeholder="الصق نص المقالة هنا">${esc(it.value || '')}</textarea>
       <p class="art-status" data-art-status hidden></p>
       <div class="art-pv-head">${ic('eye', 16)} شكلها عند الزائر</div>
@@ -420,21 +421,30 @@
     ta.dispatchEvent(new Event('input', { bubbles: true }));
   }
 
-  async function uploadArticleImage(file, ta) {
-    if (!file || !file.type.startsWith('image/')) { toast('اختار ملف صورة', 'err'); return; }
+  // Several pictures in a row show as steps that slide sideways, in file name order.
+  async function uploadArticleImages(picked, ta) {
+    const files = picked.filter(f => f.type.startsWith('image/'))
+      .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+    if (!files.length) { toast('اختار ملف صورة', 'err'); return; }
     const status = ta.parentElement.querySelector('[data-art-status]');
     const key = `art-${newId()}`;
     const cursor = ta.selectionStart;
-    uploads[key] = { done: 0, total: file.size };
+    uploads[key] = { done: 0, total: 1 };
     status.hidden = false;
+    const urls = [];
     try {
-      const url = await DB.upload(file, 'articles', (d, t) => {
-        status.textContent = window.progressInfo('جاري رفع الصورة', d, t).text;
-      });
-      ta.setSelectionRange(cursor, cursor);
-      insertAtCursor(ta, `\n![](${url})\n`);
-      toast('الصورة اتضافت في المقالة', 'ok');
+      for (let i = 0; i < files.length; i++) {
+        const counter = files.length > 1 ? ` ${i + 1} من ${files.length}` : '';
+        urls.push(await DB.upload(files[i], 'articles', (d, t) => {
+          status.textContent = window.progressInfo(`جاري رفع الصورة${counter}`, d, t).text;
+        }));
+      }
     } catch (err) { toast(err.message || 'تعذر رفع الصورة', 'err'); }
+    if (urls.length) {
+      ta.setSelectionRange(cursor, cursor);
+      insertAtCursor(ta, `\n${urls.map(u => `![](${u})`).join('\n')}\n`);
+      toast(urls.length > 1 ? `اتضافت ${urls.length} صور كخطوات` : 'الصورة اتضافت في المقالة', 'ok');
+    }
     delete uploads[key];
     status.hidden = true;
   }
@@ -614,7 +624,7 @@
       } else if ('coverInput' in el.dataset) {
         uploadCover(el.files[0]);
       } else if ('artImage' in el.dataset && el.files[0]) {
-        uploadArticleImage(el.files[0], el.closest('.sort-row').querySelector('[data-art-text]'));
+        uploadArticleImages(Array.from(el.files), el.closest('.sort-row').querySelector('[data-art-text]'));
         el.value = '';
       } else if ('itemFile' in el.dataset && el.files[0]) {
         const row = el.closest('.sort-row');
@@ -703,7 +713,7 @@
       if (!('artText' in ta.dataset) || !e.clipboardData) return;
       const html = e.clipboardData.getData('text/html');
       const image = Array.from(e.clipboardData.files || []).find(f => f.type.startsWith('image/'));
-      if (image && !html) { e.preventDefault(); uploadArticleImage(image, ta); return; }
+      if (image && !html) { e.preventDefault(); uploadArticleImages([image], ta); return; }
       if (html && /<(h[1-6]|a\s|img\s|li|strong|b|blockquote)\b/i.test(html)) {
         const text = window.Article.fromHtml(html);
         if (text) { e.preventDefault(); insertAtCursor(ta, text); }
