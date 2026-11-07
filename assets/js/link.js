@@ -8,6 +8,7 @@
   const doneKey = `miftah_done_${slug}`;
   const openedKey = `miftah_opened_${slug}`;
   const checkingKey = `miftah_checking_${slug}`;
+  const viewKey = `miftah_view_${slug}`;
   const inApp = window.InApp && !new URLSearchParams(location.search).has('nochrome')
     ? window.InApp.detect(navigator.userAgent) : null;
 
@@ -30,6 +31,7 @@
   const render = () => {
     root.innerHTML = window.renderLinkCard(post, state);
     document.body.style.cssText = window.bgStyle(post);
+    document.body.classList.toggle('reading', !!(state.items && state.items.some(i => i.type === 'article')));
   };
 
   const message = (title, text, retry) => {
@@ -114,7 +116,7 @@
     const url = window.safeUrl(window.stepUrl(step));
     if (!url || state.checking.has(id) || (!step.verify && state.done.has(id))) return;
     // Inside Messenger on Android, YouTube would ask for a login, so offer Chrome again.
-    if (inApp) { window.InApp.open(); return; }
+    if (inApp === 'android') { window.InApp.open(inApp, visit.has(viewKey)); return; }
     window.open(url, '_blank', 'noopener');
     state.clicked.add(id);
     if (!step.verify) {
@@ -183,6 +185,7 @@
     }
     state.unlocking = false;
     render();
+    if (document.body.classList.contains('reading')) window.scrollTo(0, 0);
   }
 
   // Downloads inside the page so the visitor sees exactly how far it got.
@@ -252,7 +255,11 @@
     if (act === 'open') openStep(id);
     else if (act === 'verify') verify(id);
     else if (act === 'unlock') unlock();
-    else if (act === 'copy') {
+    else if (act === 'copy-text') {
+      const ok = await window.copyText(b.dataset.copy || '');
+      window.toast(ok ? 'تم النسخ!' : 'تعذر النسخ', ok ? 'ok' : 'err');
+      if (ok) { b.classList.add('copied'); setTimeout(() => b.classList.remove('copied'), 1800); }
+    } else if (act === 'copy') {
       const it = state.items.find(x => x.id === id);
       const ok = await window.copyText(it ? it.value : '');
       window.toast(ok ? 'تم النسخ!' : 'تعذر النسخ', ok ? 'ok' : 'err');
@@ -265,7 +272,7 @@
   });
 
   async function countView() {
-    const key = `miftah_view_${slug}`;
+    const key = viewKey;
     const params = new URLSearchParams(location.search);
     if (params.has('counted')) {
       // Arrived from Messenger, where this visit was already counted.
@@ -276,6 +283,11 @@
       return;
     }
     if (visit.has(key)) return;
+    // Inside the app, wait to see if the visitor moved to Chrome, which counts the visit there.
+    if (inApp === 'android') {
+      await new Promise(res => setTimeout(res, 6000));
+      if (document.hidden) return;
+    }
     try {
       await window.DB.registerView(slug);
       visit.mark(key);
@@ -323,6 +335,26 @@
     if (post.views !== viewsBefore && !state.items && !state.unlocking) render();
   }
 
-  // Waits for the post first: leaving for Chrome can cancel requests still loading.
-  init().finally(() => { if (inApp) window.InApp.autoOpen(); });
+  // Still in the app after the jump was tried: offers it by tap, which the app can't ignore.
+  function showChromeBar() {
+    if (document.hidden || document.querySelector('.chrome-bar')) return;
+    const bar = document.createElement('button');
+    bar.type = 'button';
+    bar.className = 'chrome-bar';
+    bar.innerHTML = `${window.uiIcon('external', 18)}<span>افتح الرابط في متصفح Chrome</span>`;
+    bar.onclick = () => {
+      window.InApp.open(inApp, visit.has(viewKey));
+      if (inApp === 'ios') {
+        setTimeout(() => {
+          if (!document.hidden) window.toast('لو Chrome مش متثبت، افتح الرابط من Safari.', 'err');
+        }, 1500);
+      }
+    };
+    document.body.prepend(bar);
+  }
+
+  // Chrome is tried first. Loading waits a moment, since leaving can cancel requests in progress.
+  const leaving = !!slug && !!inApp && window.InApp.autoOpen(inApp);
+  setTimeout(init, leaving ? 1200 : 0);
+  if (inApp) setTimeout(showChromeBar, 2500);
 })();

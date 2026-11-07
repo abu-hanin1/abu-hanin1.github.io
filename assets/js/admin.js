@@ -204,6 +204,7 @@
             <button data-add="url">${ic('link', 18)} رابط موقع</button>
             <button data-add="file">${ic('file', 18)} ملف PDF</button>
             <button data-add="text">${ic('text', 18)} برومبت / نص</button>
+            <button data-add="article">${ic('article', 18)} مقالة</button>
           </div>
           <div id="items" class="sort-list"></div>
         </section>
@@ -347,6 +348,97 @@
     renderCover();
   }
 
+  // --------------------------------------------------------------- articles
+  function articlePreview(it) {
+    if (!(it.value || '').trim()) return '<p class="muted">الصق المقالة فوق، وهتشوف شكلها هنا على طول.</p>';
+    const parsed = window.Article.parse(it.value, it.label);
+    const title = it.label || parsed.title;
+    return `${title ? `<h1 class="art-pv-title" dir="auto">${esc(title)}</h1>` : ''}<div class="art-body">${parsed.html}</div>`;
+  }
+
+  function articleField(it) {
+    const tool = (kind, icon, label) => `<button type="button" data-art="${kind}">${ic(icon, 16)} ${label}</button>`;
+    return `<div class="art-tools" role="toolbar" aria-label="أدوات المقالة">
+        ${tool('h2', 'text', 'عنوان رئيسي')}
+        ${tool('h3', 'text', 'عنوان فرعي')}
+        ${tool('bold', 'check', 'عريض')}
+        ${tool('code', 'copy', 'رمز للنسخ')}
+        ${tool('app', 'download', 'زر تطبيق')}
+        ${tool('site', 'external', 'زر موقع')}
+        ${tool('file', 'file', 'زر ملف')}
+        ${tool('quote', 'text', 'اقتباس')}
+        <label class="art-tool-img">${ic('image', 16)} صورة<input type="file" accept="image/*" hidden data-art-image></label>
+      </div>
+      <p class="art-tip">الصق المقالة وهتتنسق لوحدها. ولو عايز تحدد حاجة بنفسك: ظلّل الرمز أو الرابط أو العنوان، واضغط الزر المناسب.</p>
+      <textarea class="art-text" data-item="value" data-art-text rows="14" dir="auto" placeholder="الصق نص المقالة هنا">${esc(it.value || '')}</textarea>
+      <p class="art-status" data-art-status hidden></p>
+      <div class="art-pv-head">${ic('eye', 16)} شكلها عند الزائر</div>
+      <div class="art-preview" data-art-preview>${articlePreview(it)}</div>`;
+  }
+
+  function insertAtCursor(ta, text) {
+    const s = ta.selectionStart;
+    ta.setRangeText(text, s, ta.selectionEnd, 'end');
+    ta.dispatchEvent(new Event('input', { bubbles: true }));
+    return s;
+  }
+
+  // Applies a tool to the selected text.
+  function applyArticleTool(kind, ta) {
+    const s = ta.selectionStart, e = ta.selectionEnd;
+    const selected = ta.value.slice(s, e).trim();
+    if (!selected) { toast('ظلّل النص الأول، وبعدين اضغط الزر.', 'err'); ta.focus(); return; }
+    const onOwnLine = t => `${s > 0 && ta.value[s - 1] !== '\n' ? '\n' : ''}${t}${e < ta.value.length && ta.value[e] !== '\n' ? '\n' : ''}`;
+    let result;
+    if (kind === 'h2' || kind === 'h3') {
+      result = onOwnLine(`${kind === 'h2' ? '##' : '###'} ${selected.replace(/^#+\s*/, '').replace(/\s*\n\s*/g, ' ')}`);
+    } else if (kind === 'quote') {
+      result = onOwnLine(selected.split('\n').map(l => `> ${l}`).join('\n'));
+    } else if (kind === 'bold') {
+      result = `**${selected}**`;
+    } else if (kind === 'code') {
+      result = selected.includes('\n') ? onOwnLine(`\`\`\`\n${selected}\n\`\`\``) : `\`${selected.replace(/`/g, '')}\``;
+    } else {
+      const found = selected.match(/https?:\/\/[^\s)\]]+/i);
+      if (!found) { toast('ظلّل الرابط اللي بيبدأ بـ https:// الأول.', 'err'); ta.focus(); return; }
+      const clean = t => t.replace(/[[\]()]/g, '').replace(/[:：\-–—>→\s]+$/, '').trim();
+      const names = { app: 'تطبيق', site: 'موقع', file: 'ملف' };
+      let rest = clean(selected.replace(found[0], ''));
+      // Words just before the link on the same line name the button.
+      const lineStart = ta.value.lastIndexOf('\n', s - 1) + 1;
+      const before = clean(ta.value.slice(lineStart, s));
+      if (!rest && before && before.length <= 80) {
+        ta.setRangeText(`[${names[kind]}: ${before}](${found[0]})`, lineStart, e, 'end');
+        ta.focus();
+        ta.dispatchEvent(new Event('input', { bubbles: true }));
+        return;
+      }
+      result = onOwnLine(`[${names[kind]}: ${rest || window.Article.DEFAULT_LABEL[kind]}](${found[0]})`);
+    }
+    ta.setRangeText(result, s, e, 'end');
+    ta.focus();
+    ta.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+
+  async function uploadArticleImage(file, ta) {
+    if (!file || !file.type.startsWith('image/')) { toast('اختار ملف صورة', 'err'); return; }
+    const status = ta.parentElement.querySelector('[data-art-status]');
+    const key = `art-${newId()}`;
+    const cursor = ta.selectionStart;
+    uploads[key] = { done: 0, total: file.size };
+    status.hidden = false;
+    try {
+      const url = await DB.upload(file, 'articles', (d, t) => {
+        status.textContent = window.progressInfo('جاري رفع الصورة', d, t).text;
+      });
+      ta.setSelectionRange(cursor, cursor);
+      insertAtCursor(ta, `\n![](${url})\n`);
+      toast('الصورة اتضافت في المقالة', 'ok');
+    } catch (err) { toast(err.message || 'تعذر رفع الصورة', 'err'); }
+    delete uploads[key];
+    status.hidden = true;
+  }
+
   // ------------------------------------------------------------------ items
   function renderItems() {
     const box = document.getElementById('items');
@@ -361,6 +453,8 @@
         field = `<input data-item="value" value="${esc(it.value || '')}" dir="ltr" placeholder="https://..." inputmode="url">`;
       } else if (it.type === 'text') {
         field = `<textarea data-item="value" rows="4" dir="auto" placeholder="اكتب البرومبت أو النص هنا">${esc(it.value || '')}</textarea>`;
+      } else if (it.type === 'article') {
+        field = articleField(it);
       } else if (uploads[it.id]) {
         field = barHtml(it.id);
       } else {
@@ -373,7 +467,7 @@
         <span class="grip" title="اسحب لإعادة الترتيب">${ic('grip', 18)}</span>
         <div class="item-fields">
           <div class="item-top"><span class="type-tag">${ic(T.icon, 15)} ${T.one}</span>
-            <input data-item="label" value="${esc(it.label || '')}" dir="auto" placeholder="اسم يظهر للمشاهد" maxlength="100"></div>
+            <input data-item="label" value="${esc(it.label || '')}" dir="auto" placeholder="${it.type === 'article' ? 'عنوان المقالة' : 'اسم يظهر للمشاهد'}" maxlength="${it.type === 'article' ? 200 : 100}"></div>
           ${field}
         </div>
         <button class="icon-btn danger" data-item-del aria-label="حذف">${ic('x', 18)}</button>
@@ -498,6 +592,7 @@
       } else if (el.dataset.item) {
         const it = draft.items.find(x => x.id === el.closest('.sort-row').dataset.id);
         it[el.dataset.item] = el.value; touch();
+        if (it.type === 'article') el.closest('.sort-row').querySelector('[data-art-preview]').innerHTML = articlePreview(it);
       } else if ('stepTarget' in el.dataset) {
         const s = draft.steps.find(x => x.id === el.closest('.sort-row').dataset.id);
         s.target = el.value; touch();
@@ -518,6 +613,9 @@
         draft.theme[el.dataset.hide] = !el.checked; touch();
       } else if ('coverInput' in el.dataset) {
         uploadCover(el.files[0]);
+      } else if ('artImage' in el.dataset && el.files[0]) {
+        uploadArticleImage(el.files[0], el.closest('.sort-row').querySelector('[data-art-text]'));
+        el.value = '';
       } else if ('itemFile' in el.dataset && el.files[0]) {
         const row = el.closest('.sort-row');
         const it = draft.items.find(x => x.id === row.dataset.id);
@@ -537,6 +635,16 @@
 
     form.addEventListener('click', e => {
       const t = e.target;
+      const artTool = t.closest('[data-art]');
+      if (artTool) {
+        applyArticleTool(artTool.dataset.art, artTool.closest('.sort-row').querySelector('[data-art-text]'));
+        return;
+      }
+      const artCopy = t.closest('.art-preview [data-act="copy-text"]');
+      if (artCopy) {
+        window.copyText(artCopy.dataset.copy || '').then(ok => toast(ok ? 'تم النسخ!' : 'تعذر النسخ', ok ? 'ok' : 'err'));
+        return;
+      }
       const add = t.closest('[data-add]');
       if (add) {
         draft.items.push({ id: newId(), type: add.dataset.add, label: '', value: '' });
@@ -588,6 +696,20 @@
       if (ac) { draft.theme.accent = ac.dataset.accent; touch(); pick('#accents', ac); }
     });
 
+    // Pasting into an article: a picture is uploaded, and a formatted page keeps its
+    // headings and links. Plain text goes in as usual.
+    form.addEventListener('paste', e => {
+      const ta = e.target;
+      if (!('artText' in ta.dataset) || !e.clipboardData) return;
+      const html = e.clipboardData.getData('text/html');
+      const image = Array.from(e.clipboardData.files || []).find(f => f.type.startsWith('image/'));
+      if (image && !html) { e.preventDefault(); uploadArticleImage(image, ta); return; }
+      if (html && /<(h[1-6]|a\s|img\s|li|strong|b|blockquote)\b/i.test(html)) {
+        const text = window.Article.fromHtml(html);
+        if (text) { e.preventDefault(); insertAtCursor(ta, text); }
+      }
+    });
+
     const pick = (sel, el) => {
       document.querySelectorAll(`${sel} button`).forEach(b => b.classList.toggle('on', b === el));
     };
@@ -629,6 +751,7 @@
       const row = `#items [data-id="${it.id}"]`;
       if (it.type === 'url' && !isWebUrl(it.value)) return fail('اكتب رابط صحيح يبدأ بـ https://', `${row} [data-item=value]`);
       if (it.type === 'text' && !it.value.trim()) return fail('اكتب نص البرومبت.', `${row} [data-item=value]`);
+      if (it.type === 'article' && !it.value.trim()) return fail('الصق نص المقالة.', `${row} [data-item=value]`);
       if (it.type === 'file' && !it.value) return fail('ارفع الملف أو احذف العنصر.', row);
     }
     for (const s of draft.steps) {

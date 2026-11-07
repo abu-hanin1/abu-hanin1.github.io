@@ -6,6 +6,7 @@
     link: '<path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1 1"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1-1"/>',
     file: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>',
     text: '<path d="M5 6h14M5 11h14M5 16h9"/>',
+    article: '<rect x="4" y="3" width="16" height="18" rx="2.500"/><path d="M8 8h8M8 12h8M8 16h5"/>',
     plus: '<path d="M12 5v14M5 12h14"/>',
     eye: '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/>',
     share: '<path d="M12 15V4M8 7.5 12 3.5l4 4"/><path d="M6 11H5a1 1 0 0 0-1 1v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7a1 1 0 0 0-1-1h-1"/>',
@@ -108,6 +109,7 @@
     url: { icon: 'link', one: 'رابط', many: 'روابط' },
     file: { icon: 'file', one: 'ملف', many: 'ملفات' },
     text: { icon: 'text', one: 'برومبت / نص', many: 'برومبتات / نصوص' },
+    article: { icon: 'article', one: 'مقالة', many: 'مقالات' },
   };
   window.ITEM_TYPES = TYPE;
 
@@ -167,6 +169,29 @@
       <i class="got-ic">${ic('link', 24)}</i><span><b dir="auto">${label}</b><small dir="ltr">${esc(host)}</small></span><em>${ic('external', 18)} فتح</em></a>`;
   }
 
+  // An article takes the whole page, with no card around it. Any other content follows it.
+  function articlePage(post, items, cover, chips, accent) {
+    const articles = items.filter(i => i.type === 'article');
+    const others = items.filter(i => i.type !== 'article');
+    const parts = articles.map(a => ({ item: a, parsed: window.Article.parse(a.value, a.label) }));
+    const first = parts[0];
+    const title = first.item.label || first.parsed.title || post.title;
+    const body = parts.map((p, i) => {
+      const heading = i ? (p.item.label || p.parsed.title) : '';
+      return `${heading ? `<h2 dir="auto">${esc(heading)}</h2>` : ''}${p.parsed.html}`;
+    }).join('<hr>');
+    return `<article class="art-page" style="--accent:${esc(accent)}">
+      <header class="art-hero">
+        <h1 dir="auto">${esc(title)}</h1>
+        <div class="art-meta"><div class="chips">${chips}</div>
+          <button class="round" data-act="share" aria-label="مشاركة الرابط">${ic('share', 20)}</button></div>
+      </header>
+      ${cover ? `<img class="art-cover" src="${esc(cover)}" alt="">` : ''}
+      <div class="art-body">${body}</div>
+      ${others.length ? `<section class="art-extras"><div class="got-list">${others.map(itemHtml).join('')}</div></section>` : ''}
+    </article>`;
+  }
+
   // state: {done:Set, clicked:Set, msg:{}, busy, items, unlocking, preview}
   window.renderLinkCard = function (post, state) {
     const s = Object.assign({ done: new Set(), clicked: new Set(), checking: new Set(), msg: {}, busy: null, items: null, unlocking: false }, state);
@@ -181,6 +206,9 @@
       theme.hideViews ? '' : `<span class="chip">${ic('eye', 15)}<b>${window.fmtNum(post.views)}</b> مشاهدة</span>`,
     ].join('');
     const opened = !!s.items;
+    if (opened && s.items.some(i => i.type === 'article')) {
+      return articlePage(post, s.items, cover, chips, theme.accent || '#10e08a');
+    }
     const cardClass = ['lk-card', cover ? '' : 'no-cover', opened && s.items.some(i => i.type === 'text') ? 'has-text' : ''].join(' ').trim();
     return `<article class="${cardClass}" style="--accent:${esc(theme.accent || '#10e08a')}">
       <div class="lk-info">
