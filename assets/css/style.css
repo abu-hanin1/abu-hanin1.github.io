@@ -342,6 +342,20 @@ body.reading.bg-host::before { display: none; }
 .art-body figure { margin: 26px 0; }
 .art-body figure img { display: block; width: 100%; height: auto; border-radius: 14px; }
 .art-body figcaption { margin-top: 8px; text-align: center; color: var(--muted); font-size: 14px; }
+.art-slider { margin: 28px 0; padding: 14px; background: rgba(255, 255, 255, .04); border: 1px solid rgba(255, 255, 255, .1); border-radius: 18px; }
+.art-slider-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.art-slider-top b { color: var(--accent); font-size: 17px; font-weight: 900; }
+.art-slider-top small { color: var(--muted); font-size: 13px; }
+.art-track { display: flex; align-items: center; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; border-radius: 12px; }
+.art-track::-webkit-scrollbar { display: none; }
+.art-body .art-slide { flex: 0 0 100%; min-width: 0; margin: 0; scroll-snap-align: start; scroll-snap-stop: always; }
+.art-body .art-slide img { display: block; width: 100%; height: auto; max-height: min(70vh, 620px); object-fit: contain; background: #0b0d10; border-radius: 12px; user-select: none; }
+.art-slider-nav i { font-size: 26px; font-style: normal; line-height: .8; }
+.art-slide figcaption { margin-top: 10px; color: #e4e8ee; font-size: 16px; font-weight: 700; }
+.art-slider-nav { display: flex; justify-content: space-between; gap: 10px; margin-top: 12px; }
+.art-slider-nav button { display: inline-flex; flex: 1; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 6px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-3); color: var(--text); font: inherit; font-size: 15px; font-weight: 900; line-height: 1; cursor: pointer; }
+.art-slider-nav button[data-slide="next"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.art-slider-nav button:disabled { opacity: .4; cursor: default; }
 .art-btn-wrap { display: flex; justify-content: center; margin: 22px 0 !important; }
 .art-btn { display: inline-flex; align-items: center; justify-content: center; gap: 11px; width: 100%; max-width: 480px; min-height: 60px; padding: 12px 22px; border-radius: 14px; background: var(--accent); color: var(--accent-ink); font-size: 18px; font-weight: 900; line-height: 1.4; text-align: center; box-shadow: 0 10px 28px rgba(0, 0, 0, .3); transition: transform .15s, filter .15s; }
 .art-btn:hover { transform: translateY(-2px); filter: brightness(1.08); }
