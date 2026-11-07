@@ -14,7 +14,24 @@
   // /my-link opens the post page for my-link.
   (function () {
     var m = location.pathname.match(/^\/([a-z0-9][a-z0-9-]{1,60})\/?$/i);
-    if (m) location.replace('/link.html?s=' + encodeURIComponent(m[1].toLowerCase()) + location.search.replace(/^\?/, '&'));
+    if (!m) return;
+    var go = function () {
+      location.replace('/link.html?s=' + encodeURIComponent(m[1].toLowerCase()) + location.search.replace(/^\?/, '&'));
+    };
+    // Inside Messenger or Facebook on Android, Chrome is tried first, before anything loads.
+    // Same list as assets/js/inapp.js. If the jump doesn't happen, the page opens here as usual.
+    var ua = navigator.userAgent;
+    var inApp = /FBAN|FBAV|FB_IAB|FBIOS|FB4A|FBLITE|Orca|Messenger|Instagram/i.test(ua) && /android/i.test(ua) && !/[?&]nochrome=/.test(location.search);
+    var tried = true;
+    try {
+      tried = !!sessionStorage.getItem('miftah_tried_chrome');
+      if (inApp) sessionStorage.setItem('miftah_tried_chrome', '1');
+    } catch (e) {}
+    if (!inApp || tried) return go();
+    var fallback = location.href + (location.search ? '&' : '?') + 'nochrome=1';
+    location.href = 'intent://' + location.host + location.pathname + location.search +
+      '#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=' + encodeURIComponent(fallback) + ';end';
+    setTimeout(go, 1200);
   })();
 </script>
 </head>
