@@ -3,7 +3,14 @@
   window.PAGE_STARTED = true;
   const C = window.SITE_CONFIG;
   const root = document.getElementById('app');
-  const slug = new URLSearchParams(location.search).get('s') || '';
+  // The post comes from the address itself (/abc12), or from ?s=abc12 on link.html.
+  // Apps and copy-paste can add things after the short link, so only its start counts.
+  const slugFromPath = () => {
+    if (/^\/link(\.html)?\/?$/i.test(location.pathname)) return '';
+    const m = location.pathname.match(/^\/([a-z0-9][a-z0-9-]{1,60})/i);
+    return m ? m[1].toLowerCase().replace(/-+$/, '') : '';
+  };
+  const slug = new URLSearchParams(location.search).get('s') || slugFromPath();
   const PASS_KEY = 'miftah_pass';
   const doneKey = `miftah_done_${slug}`;
   const openedKey = `miftah_opened_${slug}`;
@@ -12,13 +19,12 @@
   const inApp = window.InApp && !new URLSearchParams(location.search).has('nochrome')
     ? window.InApp.detect(navigator.userAgent) : null;
 
-  // The address bar keeps the short link, without the page's file name. Reloading it still
-  // works, because 404.html brings it back here.
-  if (/\/link(\.html)?$/.test(location.pathname) &&/^[a-z0-9][a-z0-9-]{1,60}$/.test(slug)) {
+  // The address bar keeps a clean short link, which opens this same page when reloaded.
+  if (/^[a-z0-9][a-z0-9-]{1,60}$/.test(slug)) {
     const rest = new URLSearchParams(location.search);
-    rest.delete('s');
+    ['s', 'fbclid'].forEach(k => rest.delete(k));
     const qs = rest.toString();
-    history.replaceState(null, '', `/${slug}${qs ? `?${qs}` : ''}`);
+    try { history.replaceState(null, '', `/${slug}${qs ? `?${qs}` : ''}`); } catch (e) {}
   }
 
   let post = null;
